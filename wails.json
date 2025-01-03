@@ -1,0 +1,16 @@
+{
+  "$schema": "https://wails.io/schemas/config.v2.json",
+  "name": "granola",
+  "outputfilename": "granola",
+  "frontend:install": "npm install",
+  "frontend:build": "npm run build",
+  "frontend:dev:watcher": "npm run dev",
+  "frontend:dev:serverUrl": "auto",
+  "author": {
+    "name": "steven semyung oh",
+    "email": "semyung.dev@gmail.com"
+  },
+  "info": {
+    "productVersion": "0.0.1"
+  }
+}
