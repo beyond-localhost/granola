@@ -3,6 +3,8 @@ package bowels
 import (
 	"database/sql"
 	"fmt"
+	"granola/db/transaction"
+	"strings"
 )
 
 type Bowel struct {
@@ -10,6 +12,11 @@ type Bowel struct {
 	Name string `json:"name"`
 	// description can be null.
 	Description *string `json:"description"`
+}
+
+type BowelUpdate struct {
+	Name        *string `json:"name,omitempty"`
+	Description *string `json:"description,omitempty"`
 }
 
 func NewBowel(id int64, name string, description *string) *Bowel {
@@ -71,7 +78,7 @@ func (r *SQLiteBowelRepository) GetAll() ([]Bowel, error) {
 	return bowels, nil
 }
 
-func (r *SQLiteBowelRepository) GetById (id int) (*Bowel, error) {
+func (r *SQLiteBowelRepository) GetById(id int) (*Bowel, error) {
 	row := r.db.QueryRow("select * from bowels where id = ?", id)
 
 	bowel := Bowel{}
@@ -84,18 +91,70 @@ func (r *SQLiteBowelRepository) GetById (id int) (*Bowel, error) {
 	return &bowel, nil
 }
 
+func getByIdTx(tx *sql.Tx, id int) (*Bowel, error) {
+	row := tx.QueryRow("select * from bowels where id = ?", id)
 
+	bowel := Bowel{}
+	err := row.Scan(&bowel.Id, &bowel.Name, &bowel.Description)
 
-func (r *SQLiteBowelRepository) DeleteById(id int) error {
-	result, err := r.db.Exec("delete from bowels where id = ?", id)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	if rows, err := result.RowsAffected(); err != nil {
-		return err
-	} else if rows != 1 {
-		return fmt.Errorf("expected to delete 1 row, but deleted %d", rows)
-	} else {
-		return nil
+
+	return &bowel, nil
+}
+
+
+func (r * SQLiteBowelRepository) UpdateById(id int, update BowelUpdate) (*Bowel, error) {
+	_, err := r.GetById(id)
+	
+	if err != nil {
+		return nil, err
 	}
+
+	return transaction.Tx(r.db, func(tx *sql.Tx) (*Bowel, error) {
+		setValues := make([]string, 2)
+		args := make([]interface{}, 2)
+
+		if update.Name != nil {
+			setValues = append(setValues, "name = ?")
+			args = append(args, *update.Name)
+		}
+
+		if update.Description != nil {
+			setValues = append(setValues, "description = ?")
+			args = append(args, *update.Description)
+		}
+
+		query := fmt.Sprintf(
+			`UPDATE bowels 
+			 SET %s 
+			 WHERE id = ?`,
+			strings.Join(setValues, ", "),
+		)
+
+		result, err := tx.Exec(query, append(args, id)...)
+		
+		if err != nil {
+			return nil, fmt.Errorf("failed to update bowel: %w", err)
+		}
+
+		rows, err := result.RowsAffected()
+
+		if err != nil {
+			return nil, fmt.Errorf("failed to get affected rows: %w", err)
+		}
+
+		if rows != 0 {
+			return nil, fmt.Errorf("no rows affected: %w", err)
+		}
+
+		updated, err := getByIdTx(tx, id)
+		
+		if err != nil {
+			return nil, fmt.Errorf("failed to get updated row after update: %w", err)
+		}
+
+		return updated, nil
+	})
 }

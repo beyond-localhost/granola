@@ -17,7 +17,7 @@ var Conn *sql.DB
 var connectionOptions = map[string]string{
 	"cache":         "private",
 	"_foreign_keys": "yes",
-	"mode":         "rwc",
+	"mode":          "rwc",
 }
 
 func createConnectionString(path string, options map[string]string) string {
@@ -52,19 +52,18 @@ func getProjectRoot() string {
 	return filepath.Dir(filepath.Dir(dir))
 }
 
-
 func init() {
 	projectRoot := getProjectRoot()
 	dbPath := filepath.Join(projectRoot, "granola.db")
 	log.Printf("Using dbPath: %s\n", dbPath)
 
 	newDB := false
-	
+
 	if _, err := os.Stat(dbPath); os.IsNotExist(err) {
 		log.Printf("DB not exists: %s\n", err)
 		newDB = true
 	}
-	
+
 	connString := createConnectionString(dbPath, connectionOptions)
 	log.Printf("Using connection path: %s\n", connString)
 	db, err := sql.Open("sqlite3", connString)
@@ -78,7 +77,7 @@ func init() {
 	}
 
 	Conn = db
-	
+
 	log.Printf("Successfully connected to database: %s", connString)
 
 	version := 0
@@ -91,18 +90,17 @@ func init() {
 		version = v
 	}
 
-	
 	migrations, err := loadMigrations()
 
 	if err != nil {
 		log.Fatalf("Failed to load migrations: %v", err)
 	}
 
-	
 	if err := applyMigrations(Conn, migrations, version); err != nil {
 		log.Fatalf("Failed to apply migrations: %v", err)
 	}
 
 	log.Println("Applied all migrations")
 }
+
 
