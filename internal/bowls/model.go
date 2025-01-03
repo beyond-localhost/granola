@@ -1,4 +1,4 @@
-package bowels
+package bowls
 
 import (
 	"database/sql"
@@ -7,41 +7,41 @@ import (
 	"strings"
 )
 
-type Bowel struct {
+type Bowl struct {
 	Id   int64    `json:"id"`
 	Name string `json:"name"`
 	// description can be null.
 	Description *string `json:"description"`
 }
 
-type BowelUpdate struct {
+type BowlUpdate struct {
 	Name        *string `json:"name,omitempty"`
 	Description *string `json:"description,omitempty"`
 }
 
-func NewBowel(id int64, name string, description *string) *Bowel {
-	return &Bowel{id, name, description}
+func NewBowel(id int64, name string, description *string) *Bowl {
+	return &Bowl{id, name, description}
 }
 
-type BowelRepository interface {
-	GetAll() ([]Bowel, error)
-	GetById(id int) (*Bowel, error)
-	Create(name string, description *string) (*Bowel, error)
-	UpdateById(id int, params map[string]string) (*Bowel, error)
+type BowlRepository interface {
+	Create(name string, description *string) (*Bowl, error)
+	GetAll() ([]Bowl, error)
+	GetById(id int) (*Bowl, error)
+	UpdateById(id int, update BowlUpdate) (*Bowl, error)
 	DeleteById(id int) error
 }
 
-type SQLiteBowelRepository struct {
+type SQLiteBowlRepository struct {
 	db *sql.DB
 }
 
-func NewSQLiteBowelRepository(db *sql.DB) *SQLiteBowelRepository {
-	return &SQLiteBowelRepository{db}
+func NewSQLiteBowlRepository(db *sql.DB) BowlRepository {
+	return &SQLiteBowlRepository{db}
 }
 
 
-func (r *SQLiteBowelRepository) Create(name string, description *string) (*Bowel, error) {
-    result, err := r.db.Exec("insert into bowels (name, description) values (?, ?)", name, description)
+func (r *SQLiteBowlRepository) Create(name string, description *string) (*Bowl, error) {
+    result, err := r.db.Exec("insert into bowls (name, description) values (?, ?)", name, description)
     
     if err != nil {
         return nil, err
@@ -56,8 +56,8 @@ func (r *SQLiteBowelRepository) Create(name string, description *string) (*Bowel
     return NewBowel(id, name, description), nil
 }
 
-func (r *SQLiteBowelRepository) GetAll() ([]Bowel, error) {
-	rows, err := r.db.Query("select * from bowels")
+func (r *SQLiteBowlRepository) GetAll() ([]Bowl, error) {
+	rows, err := r.db.Query("select * from bowls")
 
 	if err != nil {
 		return nil, err
@@ -65,23 +65,23 @@ func (r *SQLiteBowelRepository) GetAll() ([]Bowel, error) {
 
 	defer rows.Close()
 
-	bowels := []Bowel{}
+	bowls := []Bowl{}
 	for rows.Next() {
-		bowel := Bowel{}
+		bowel := Bowl{}
 		err = rows.Scan(&bowel.Id, &bowel.Name, &bowel.Description)
 		if err != nil {
 			return nil, err
 		}
-		bowels = append(bowels, bowel)
+		bowls = append(bowls, bowel)
 	}
 
-	return bowels, nil
+	return bowls, nil
 }
 
-func (r *SQLiteBowelRepository) GetById(id int) (*Bowel, error) {
-	row := r.db.QueryRow("select * from bowels where id = ?", id)
+func (r *SQLiteBowlRepository) GetById(id int) (*Bowl, error) {
+	row := r.db.QueryRow("select * from bowls where id = ?", id)
 
-	bowel := Bowel{}
+	bowel := Bowl{}
 	err := row.Scan(&bowel.Id, &bowel.Name, &bowel.Description)
 
 	if err != nil {
@@ -91,10 +91,10 @@ func (r *SQLiteBowelRepository) GetById(id int) (*Bowel, error) {
 	return &bowel, nil
 }
 
-func getByIdTx(tx *sql.Tx, id int) (*Bowel, error) {
-	row := tx.QueryRow("select * from bowels where id = ?", id)
+func getByIdTx(tx *sql.Tx, id int) (*Bowl, error) {
+	row := tx.QueryRow("select * from bowls where id = ?", id)
 
-	bowel := Bowel{}
+	bowel := Bowl{}
 	err := row.Scan(&bowel.Id, &bowel.Name, &bowel.Description)
 
 	if err != nil {
@@ -105,14 +105,14 @@ func getByIdTx(tx *sql.Tx, id int) (*Bowel, error) {
 }
 
 
-func (r * SQLiteBowelRepository) UpdateById(id int, update BowelUpdate) (*Bowel, error) {
+func (r * SQLiteBowlRepository) UpdateById(id int, update BowlUpdate) (*Bowl, error) {
 	_, err := r.GetById(id)
 	
 	if err != nil {
 		return nil, err
 	}
 
-	return transaction.Tx(r.db, func(tx *sql.Tx) (*Bowel, error) {
+	return transaction.Tx(r.db, func(tx *sql.Tx) (*Bowl, error) {
 		setValues := make([]string, 2)
 		args := make([]interface{}, 2)
 
@@ -127,7 +127,7 @@ func (r * SQLiteBowelRepository) UpdateById(id int, update BowelUpdate) (*Bowel,
 		}
 
 		query := fmt.Sprintf(
-			`UPDATE bowels 
+			`UPDATE bowls 
 			 SET %s 
 			 WHERE id = ?`,
 			strings.Join(setValues, ", "),
@@ -157,4 +157,28 @@ func (r * SQLiteBowelRepository) UpdateById(id int, update BowelUpdate) (*Bowel,
 
 		return updated, nil
 	})
+}
+
+func (r *SQLiteBowlRepository) DeleteById(id int) error {
+	_, err := r.GetById(id)
+	
+	if err != nil {
+		return err
+	}
+	result, err := r.db.Exec("delete from bowls where id = ?", id)
+	if err != nil {
+		return fmt.Errorf("failed to delete bowel: %w", err)
+	}
+
+	rows, err := result.RowsAffected()
+		
+	if err != nil {
+		return fmt.Errorf("failed to get affected rows: %w", err)
+	}
+
+	if rows != 0 {
+		return fmt.Errorf("no rows affected: %w", err)
+	}
+
+	return nil
 }

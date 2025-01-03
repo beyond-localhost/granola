@@ -12,7 +12,7 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
-var Conn *sql.DB
+
 
 var connectionOptions = map[string]string{
 	"cache":         "private",
@@ -48,11 +48,12 @@ func getProjectRoot() string {
 	}
 
 	dir := filepath.Dir(filename)
+	// return dir
 	// Go up two levels from internal/db to project root
-	return filepath.Dir(filepath.Dir(dir))
+	return filepath.Dir(dir)
 }
 
-func init() {
+func New() *sql.DB {
 	projectRoot := getProjectRoot()
 	dbPath := filepath.Join(projectRoot, "granola.db")
 	log.Printf("Using dbPath: %s\n", dbPath)
@@ -66,24 +67,24 @@ func init() {
 
 	connString := createConnectionString(dbPath, connectionOptions)
 	log.Printf("Using connection path: %s\n", connString)
-	db, err := sql.Open("sqlite3", connString)
+	conn, err := sql.Open("sqlite3", connString)
 	if err != nil {
 		log.Fatalf("Failed to open database: %v", err)
 	}
 
 	// Verify the connection
-	if err := db.Ping(); err != nil {
+	if err := conn.Ping(); err != nil {
 		log.Fatalf("Failed to ping database: %v", err)
 	}
 
-	Conn = db
+	
 
 	log.Printf("Successfully connected to database: %s", connString)
 
 	version := 0
 
 	if !newDB {
-		v, err := mustCurrentVersion(Conn)
+		v, err := mustCurrentVersion(conn)
 		if err != nil {
 			log.Fatalf("Failed to get current version: %v", err)
 		}
@@ -96,11 +97,11 @@ func init() {
 		log.Fatalf("Failed to load migrations: %v", err)
 	}
 
-	if err := applyMigrations(Conn, migrations, version); err != nil {
+	if err := applyMigrations(conn, migrations, version); err != nil {
 		log.Fatalf("Failed to apply migrations: %v", err)
 	}
 
 	log.Println("Applied all migrations")
+	return conn
 }
-
 

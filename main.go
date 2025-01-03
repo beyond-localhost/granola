@@ -2,7 +2,8 @@ package main
 
 import (
 	"embed"
-	_ "granola/db"
+	"granola/db"
+	"granola/internal/bowls"
 
 	"github.com/wailsapp/wails/v2"
 	"github.com/wailsapp/wails/v2/pkg/options"
@@ -13,6 +14,10 @@ import (
 var assets embed.FS
 
 func main() {
+	db := db.New()
+
+	bowlsRepo := bowls.NewSQLiteBowlRepository(db)
+	bowelsService := bowls.NewBowelService(bowlsRepo)
 	app := NewApp()
 
 	// Create application with options
@@ -27,6 +32,7 @@ func main() {
 		OnStartup:        app.startup,
 		Bind: []interface{}{
 			app,
+			bowelsService,
 		},
 	})
 
