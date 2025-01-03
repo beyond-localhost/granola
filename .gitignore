@@ -3,3 +3,5 @@ node_modules
 frontend/dist
 *.env
 granola.db
+
+build/bin # Compiled files

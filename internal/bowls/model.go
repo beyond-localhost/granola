@@ -165,19 +165,9 @@ func (r *SQLiteBowlRepository) DeleteById(id int) error {
 	if err != nil {
 		return err
 	}
-	result, err := r.db.Exec("delete from bowls where id = ?", id)
+	_, err = r.db.Exec("delete from bowls where id = ?", id)
 	if err != nil {
 		return fmt.Errorf("failed to delete bowel: %w", err)
-	}
-
-	rows, err := result.RowsAffected()
-		
-	if err != nil {
-		return fmt.Errorf("failed to get affected rows: %w", err)
-	}
-
-	if rows != 0 {
-		return fmt.Errorf("no rows affected: %w", err)
 	}
 
 	return nil
