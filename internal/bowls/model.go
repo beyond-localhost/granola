@@ -19,7 +19,7 @@ type BowlUpdate struct {
 	Description *string `json:"description,omitempty"`
 }
 
-func NewBowel(id int64, name string, description *string) *Bowl {
+func NewBowl(id int64, name string, description *string) *Bowl {
 	return &Bowl{id, name, description}
 }
 
@@ -53,7 +53,7 @@ func (r *SQLiteBowlRepository) Create(name string, description *string) (*Bowl, 
         return nil, err
     }
 
-    return NewBowel(id, name, description), nil
+    return NewBowl(id, name, description), nil
 }
 
 func (r *SQLiteBowlRepository) GetAll() ([]Bowl, error) {
@@ -67,12 +67,12 @@ func (r *SQLiteBowlRepository) GetAll() ([]Bowl, error) {
 
 	bowls := []Bowl{}
 	for rows.Next() {
-		bowel := Bowl{}
-		err = rows.Scan(&bowel.Id, &bowel.Name, &bowel.Description)
+		bowl := Bowl{}
+		err = rows.Scan(&bowl.Id, &bowl.Name, &bowl.Description)
 		if err != nil {
 			return nil, err
 		}
-		bowls = append(bowls, bowel)
+		bowls = append(bowls, bowl)
 	}
 
 	return bowls, nil
@@ -81,27 +81,27 @@ func (r *SQLiteBowlRepository) GetAll() ([]Bowl, error) {
 func (r *SQLiteBowlRepository) GetById(id int) (*Bowl, error) {
 	row := r.db.QueryRow("select * from bowls where id = ?", id)
 
-	bowel := Bowl{}
-	err := row.Scan(&bowel.Id, &bowel.Name, &bowel.Description)
+	bowl := Bowl{}
+	err := row.Scan(&bowl.Id, &bowl.Name, &bowl.Description)
 
 	if err != nil {
 		return nil, err
 	}
 
-	return &bowel, nil
+	return &bowl, nil
 }
 
 func getByIdTx(tx *sql.Tx, id int) (*Bowl, error) {
 	row := tx.QueryRow("select * from bowls where id = ?", id)
 
-	bowel := Bowl{}
-	err := row.Scan(&bowel.Id, &bowel.Name, &bowel.Description)
+	bowl := Bowl{}
+	err := row.Scan(&bowl.Id, &bowl.Name, &bowl.Description)
 
 	if err != nil {
 		return nil, err
 	}
 
-	return &bowel, nil
+	return &bowl, nil
 }
 
 
@@ -136,7 +136,7 @@ func (r * SQLiteBowlRepository) UpdateById(id int, update BowlUpdate) (*Bowl, er
 		result, err := tx.Exec(query, append(args, id)...)
 		
 		if err != nil {
-			return nil, fmt.Errorf("failed to update bowel: %w", err)
+			return nil, fmt.Errorf("failed to update bowl: %w", err)
 		}
 
 		rows, err := result.RowsAffected()
@@ -159,6 +159,7 @@ func (r * SQLiteBowlRepository) UpdateById(id int, update BowlUpdate) (*Bowl, er
 	})
 }
 
+
 func (r *SQLiteBowlRepository) DeleteById(id int) error {
 	_, err := r.GetById(id)
 	
@@ -167,7 +168,7 @@ func (r *SQLiteBowlRepository) DeleteById(id int) error {
 	}
 	_, err = r.db.Exec("delete from bowls where id = ?", id)
 	if err != nil {
-		return fmt.Errorf("failed to delete bowel: %w", err)
+		return fmt.Errorf("failed to delete bowl: %w", err)
 	}
 
 	return nil
