@@ -33,3 +33,40 @@ export namespace bowls {
 
 }
 
+export namespace flakes {
+	
+	export class Flake {
+	    id: number;
+	    name: string;
+	    description?: string;
+	    bowlId: number;
+	
+	    static createFrom(source: any = {}) {
+	        return new Flake(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.id = source["id"];
+	        this.name = source["name"];
+	        this.description = source["description"];
+	        this.bowlId = source["bowlId"];
+	    }
+	}
+	export class FlakeUpdate {
+	    name?: string;
+	    description?: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new FlakeUpdate(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.name = source["name"];
+	        this.description = source["description"];
+	    }
+	}
+
+}
+

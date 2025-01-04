@@ -40,6 +40,10 @@ type SQLiteFlakeRepository struct {
 	db *sql.DB
 }
 
+func NewSQLiteFlakeRepository (db *sql.DB) FlakeRepository {
+	return &SQLiteFlakeRepository{db}
+}
+
 func (r *SQLiteFlakeRepository) Create(name string, description *string, bowlId int64) (*Flake, error) {
 	result, err := r.db.Exec("insert into flakes (name, description, bowl_id) values (?, ?, ?)", name, description, bowlId)
 

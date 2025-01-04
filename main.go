@@ -4,6 +4,7 @@ import (
 	"embed"
 	"granola/db"
 	"granola/internal/bowls"
+	"granola/internal/flakes"
 
 	"github.com/wailsapp/wails/v2"
 	"github.com/wailsapp/wails/v2/pkg/options"
@@ -18,6 +19,9 @@ func main() {
 
 	bowlsRepo := bowls.NewSQLiteBowlRepository(db)
 	bowelsService := bowls.NewBowelService(bowlsRepo)
+
+	flakesRepo := flakes.NewSQLiteFlakeRepository(db)
+	flakesService := flakes.NewFlakeService(flakesRepo)
 	app := NewApp()
 
 	// Create application with options
@@ -33,6 +37,7 @@ func main() {
 		Bind: []interface{}{
 			app,
 			bowelsService,
+			flakesService,
 		},
 	})
 
