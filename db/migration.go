@@ -2,10 +2,9 @@ package db
 
 import (
 	"database/sql"
+	"embed"
 	"fmt"
 	"log"
-	"os"
-	"path/filepath"
 	"sort"
 	"strings"
 )
@@ -16,18 +15,16 @@ type migration struct {
 	filePath string
 }
 
-func loadMigrations() ([]migration, error) {
-	root := getProjectRoot()
-	dirPath := filepath.Join(root, "db", "migrations")
+//go:embed migrations/*.sql
+var embeddedMigrations embed.FS
 
-	entries, err := os.ReadDir(dirPath)
-	
-	if err != nil { 
-		return nil, fmt.Errorf("migration directory: %v", err)
+func loadMigrations() ([]migration, error) {
+	entries, err := embeddedMigrations.ReadDir("migrations")
+	if err != nil {
+		return nil, fmt.Errorf("failed to read embedded migrations: %v", err)
 	}
 
 	var migrations []migration
-
 	for _, entry := range entries {
 		if entry.IsDir() {
 			continue
@@ -38,32 +35,28 @@ func loadMigrations() ([]migration, error) {
 		}
 
 		parts := strings.SplitN(entry.Name(), "_", 2)
-
-		fmt.Printf("Found migration file: %s, parts: %v\n", entry.Name(), parts)
-		
 		if len(parts) != 2 {
-			return nil, fmt.Errorf("invalid migration file name: %s", entry.Name())	
+			return nil, fmt.Errorf("invalid migration file name: %s", entry.Name())
 		}
 
 		var version int
 		if _, err := fmt.Sscanf(parts[0], "%d", &version); err != nil {
-			return nil, fmt.Errorf("invalid migration version(%s): %v",parts[0], err)
+			return nil, fmt.Errorf("invalid migration version(%s): %v", parts[0], err)
 		}
 
 		description := strings.TrimSuffix(parts[1], ".sql")
-		filePath := filepath.Join(dirPath, entry.Name())
+		filePath := entry.Name()
 
 		migrations = append(migrations, migration{
-			version: version,
+			version:     version,
 			description: description,
-			filePath: filePath,
+			filePath:    filePath,
 		})
 	}
 
-	sort.Slice(migrations, func (i, j int) bool {
+	sort.Slice(migrations, func(i, j int) bool {
 		return migrations[i].version < migrations[j].version
 	})
-
 
 	return migrations, nil
 }
@@ -92,8 +85,7 @@ func applyMigrations(db *sql.DB, migrations []migration, currentVersion int) err
 	defer tx.Rollback()
 
 	for _, m := range pendingMigrations {
-		content, err := os.ReadFile(m.filePath)
-		
+		content, err := embeddedMigrations.ReadFile("migrations/" + m.filePath)
 		if err != nil {
 			return fmt.Errorf("read file: %v", err)
 		}
@@ -119,7 +111,7 @@ func applyMigrations(db *sql.DB, migrations []migration, currentVersion int) err
 }
 
 
-func mustCurrentVersion(db *sql.DB) (int, error) {
+func CurrentVersion(db *sql.DB) (int, error) {
 	var version int
 	err := db.QueryRow(`
 	  select version from schema_migrations
