@@ -18,5 +18,5 @@ create table if not exists flakes (
   constraint fk_flakes_bowls
     foreign key (bowl_id)
     references bowls (id)
-    on delete set null
+    on delete cascade
 );
