@@ -18,7 +18,7 @@ func main() {
 	db := db.New()
 
 	bowlsRepo := bowls.NewSQLiteBowlRepository(db)
-	bowelsService := bowls.NewBowelService(bowlsRepo)
+	bowlsService := bowls.NewBowlsService(bowlsRepo)
 
 	flakesRepo := flakes.NewSQLiteFlakeRepository(db)
 	flakesService := flakes.NewFlakeService(flakesRepo)
@@ -36,7 +36,7 @@ func main() {
 		OnStartup:        app.startup,
 		Bind: []interface{}{
 			app,
-			bowelsService,
+			bowlsService,
 			flakesService,
 		},
 	})

@@ -3,14 +3,14 @@ import { SidebarProvider } from "#/components/ui/sidebar";
 import { createRootRoute, Outlet } from "@tanstack/react-router";
 import { TanStackRouterDevtools } from "@tanstack/router-devtools";
 
-// createRootRouteWithContext<TContext>
-// @see https://tanstack.com/router/latest/docs/framework/react/guide/router-context
 export const Route = createRootRoute({
   component: () => (
     <>
       <SidebarProvider>
         <AppSidebar />
-        <Outlet />
+        <main className="p-2 w-full">
+          <Outlet />
+        </main>
       </SidebarProvider>
       <TanStackRouterDevtools />
     </>
