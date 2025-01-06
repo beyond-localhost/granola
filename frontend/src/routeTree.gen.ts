@@ -11,12 +11,15 @@
 // Import Routes
 
 import { Route as rootRoute } from './routes/__root'
-import { Route as BowlsRouteImport } from './routes/bowls/route'
+import { Route as BowlsImport } from './routes/bowls'
 import { Route as IndexImport } from './routes/index'
+import { Route as BowlsIndexImport } from './routes/bowls.index'
+import { Route as BowlsAddImport } from './routes/bowls_.add'
+import { Route as BowlsBowlIdImport } from './routes/bowls_.$bowlId'
 
 // Create/Update Routes
 
-const BowlsRouteRoute = BowlsRouteImport.update({
+const BowlsRoute = BowlsImport.update({
   id: '/bowls',
   path: '/bowls',
   getParentRoute: () => rootRoute,
@@ -25,6 +28,24 @@ const BowlsRouteRoute = BowlsRouteImport.update({
 const IndexRoute = IndexImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const BowlsIndexRoute = BowlsIndexImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => BowlsRoute,
+} as any)
+
+const BowlsAddRoute = BowlsAddImport.update({
+  id: '/bowls_/add',
+  path: '/bowls/add',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const BowlsBowlIdRoute = BowlsBowlIdImport.update({
+  id: '/bowls_/$bowlId',
+  path: '/bowls/$bowlId',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -43,47 +64,96 @@ declare module '@tanstack/react-router' {
       id: '/bowls'
       path: '/bowls'
       fullPath: '/bowls'
-      preLoaderRoute: typeof BowlsRouteImport
+      preLoaderRoute: typeof BowlsImport
       parentRoute: typeof rootRoute
+    }
+    '/bowls_/$bowlId': {
+      id: '/bowls_/$bowlId'
+      path: '/bowls/$bowlId'
+      fullPath: '/bowls/$bowlId'
+      preLoaderRoute: typeof BowlsBowlIdImport
+      parentRoute: typeof rootRoute
+    }
+    '/bowls_/add': {
+      id: '/bowls_/add'
+      path: '/bowls/add'
+      fullPath: '/bowls/add'
+      preLoaderRoute: typeof BowlsAddImport
+      parentRoute: typeof rootRoute
+    }
+    '/bowls/': {
+      id: '/bowls/'
+      path: '/'
+      fullPath: '/bowls/'
+      preLoaderRoute: typeof BowlsIndexImport
+      parentRoute: typeof BowlsImport
     }
   }
 }
 
 // Create and export the route tree
 
+interface BowlsRouteChildren {
+  BowlsIndexRoute: typeof BowlsIndexRoute
+}
+
+const BowlsRouteChildren: BowlsRouteChildren = {
+  BowlsIndexRoute: BowlsIndexRoute,
+}
+
+const BowlsRouteWithChildren = BowlsRoute._addFileChildren(BowlsRouteChildren)
+
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/bowls': typeof BowlsRouteRoute
+  '/bowls': typeof BowlsRouteWithChildren
+  '/bowls/$bowlId': typeof BowlsBowlIdRoute
+  '/bowls/add': typeof BowlsAddRoute
+  '/bowls/': typeof BowlsIndexRoute
 }
 
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/bowls': typeof BowlsRouteRoute
+  '/bowls/$bowlId': typeof BowlsBowlIdRoute
+  '/bowls/add': typeof BowlsAddRoute
+  '/bowls': typeof BowlsIndexRoute
 }
 
 export interface FileRoutesById {
   __root__: typeof rootRoute
   '/': typeof IndexRoute
-  '/bowls': typeof BowlsRouteRoute
+  '/bowls': typeof BowlsRouteWithChildren
+  '/bowls_/$bowlId': typeof BowlsBowlIdRoute
+  '/bowls_/add': typeof BowlsAddRoute
+  '/bowls/': typeof BowlsIndexRoute
 }
 
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/bowls'
+  fullPaths: '/' | '/bowls' | '/bowls/$bowlId' | '/bowls/add' | '/bowls/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/bowls'
-  id: '__root__' | '/' | '/bowls'
+  to: '/' | '/bowls/$bowlId' | '/bowls/add' | '/bowls'
+  id:
+    | '__root__'
+    | '/'
+    | '/bowls'
+    | '/bowls_/$bowlId'
+    | '/bowls_/add'
+    | '/bowls/'
   fileRoutesById: FileRoutesById
 }
 
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  BowlsRouteRoute: typeof BowlsRouteRoute
+  BowlsRoute: typeof BowlsRouteWithChildren
+  BowlsBowlIdRoute: typeof BowlsBowlIdRoute
+  BowlsAddRoute: typeof BowlsAddRoute
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  BowlsRouteRoute: BowlsRouteRoute,
+  BowlsRoute: BowlsRouteWithChildren,
+  BowlsBowlIdRoute: BowlsBowlIdRoute,
+  BowlsAddRoute: BowlsAddRoute,
 }
 
 export const routeTree = rootRoute
@@ -97,14 +167,29 @@ export const routeTree = rootRoute
       "filePath": "__root.tsx",
       "children": [
         "/",
-        "/bowls"
+        "/bowls",
+        "/bowls_/$bowlId",
+        "/bowls_/add"
       ]
     },
     "/": {
       "filePath": "index.tsx"
     },
     "/bowls": {
-      "filePath": "bowls/route.tsx"
+      "filePath": "bowls.tsx",
+      "children": [
+        "/bowls/"
+      ]
+    },
+    "/bowls_/$bowlId": {
+      "filePath": "bowls_.$bowlId.tsx"
+    },
+    "/bowls_/add": {
+      "filePath": "bowls_.add.tsx"
+    },
+    "/bowls/": {
+      "filePath": "bowls.index.tsx",
+      "parent": "/bowls"
     }
   }
 }

@@ -13,7 +13,8 @@ import { Button } from "#/components/ui/button";
 import { Plus } from "lucide-react";
 
 import { bowls } from "@/go/models";
-import { Route as bowlsRoute } from "../route";
+import { Route as bowlsRoute } from "../bowls.index";
+import { Route as bowlAddRoute } from "../bowls_.add";
 
 type Props = {
   bowlsPromise: Promise<Array<bowls.Bowl>>;
@@ -27,7 +28,7 @@ export function BowlTable({ bowlsPromise }: Props) {
       <section>
         <p>There is no sections.</p>
         <Button variant="outline" asChild>
-          <Link from={bowlsRoute.fullPath} to="/">
+          <Link from={bowlsRoute.fullPath} to={bowlAddRoute.to}>
             Add the category
             <Plus />
           </Link>
@@ -47,7 +48,7 @@ export function BowlTable({ bowlsPromise }: Props) {
       <TableBody>
         {bowls.map((bowl) => {
           return (
-            <TableRow key={bowl.id}>
+            <TableRow>
               <TableCell>{bowl.name}</TableCell>
               <TableCell>{bowl.description}</TableCell>
             </TableRow>
@@ -55,7 +56,7 @@ export function BowlTable({ bowlsPromise }: Props) {
         })}
         <TableRow>
           <TableCell className="text-right" colSpan={2}>
-            <Link from={bowlsRoute.fullPath} to="/">
+            <Link from={bowlsRoute.fullPath} to={bowlAddRoute.to}>
               Add the category
             </Link>
           </TableCell>

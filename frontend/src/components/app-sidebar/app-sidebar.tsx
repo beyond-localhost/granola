@@ -14,7 +14,6 @@ import { Home, CircleCheck } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 
 import { Route as indexRoute } from "#/routes/index";
-import { Route as bowlsRoute } from "#/routes/bowls/route";
 
 const MENUS = [
   {
