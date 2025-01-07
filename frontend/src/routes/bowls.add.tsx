@@ -9,9 +9,9 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import * as bowlService from "@/go/bowls/BowlsService";
 import { useAppSidebar } from "#/components/app-sidebar/app-sidebar-provider";
 
-import { Route as specificBowlRoute } from "#/routes/bowls_.$bowlId";
+import { Route as specificBowlRoute } from "#/routes/bowls.$bowlId";
 
-export const Route = createFileRoute("/bowls_/add")({
+export const Route = createFileRoute("/bowls/add")({
   component: RouteComponent,
 });
 
@@ -29,8 +29,8 @@ const initialFormState: FormState = {
 };
 
 function RouteComponent() {
-  const navigate = useNavigate({ from: Route.fullPath });
   const { onAdd } = useAppSidebar();
+  const navigate = useNavigate({ from: Route.fullPath });
 
   const [state, formAction, isPending] = React.useActionState<
     FormState,

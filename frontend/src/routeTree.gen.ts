@@ -13,8 +13,9 @@
 import { Route as rootRoute } from './routes/__root'
 import { Route as BowlsImport } from './routes/bowls'
 import { Route as IndexImport } from './routes/index'
-import { Route as BowlsAddImport } from './routes/bowls_.add'
-import { Route as BowlsBowlIdImport } from './routes/bowls_.$bowlId'
+import { Route as BowlsAddImport } from './routes/bowls.add'
+import { Route as BowlsBowlIdImport } from './routes/bowls.$bowlId'
+import { Route as BowlsBowlIdFlakesAddImport } from './routes/bowls_.$bowlId.flakes.add'
 
 // Create/Update Routes
 
@@ -31,14 +32,20 @@ const IndexRoute = IndexImport.update({
 } as any)
 
 const BowlsAddRoute = BowlsAddImport.update({
-  id: '/bowls_/add',
-  path: '/bowls/add',
-  getParentRoute: () => rootRoute,
+  id: '/add',
+  path: '/add',
+  getParentRoute: () => BowlsRoute,
 } as any)
 
 const BowlsBowlIdRoute = BowlsBowlIdImport.update({
-  id: '/bowls_/$bowlId',
-  path: '/bowls/$bowlId',
+  id: '/$bowlId',
+  path: '/$bowlId',
+  getParentRoute: () => BowlsRoute,
+} as any)
+
+const BowlsBowlIdFlakesAddRoute = BowlsBowlIdFlakesAddImport.update({
+  id: '/bowls_/$bowlId/flakes/add',
+  path: '/bowls/$bowlId/flakes/add',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -60,18 +67,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof BowlsImport
       parentRoute: typeof rootRoute
     }
-    '/bowls_/$bowlId': {
-      id: '/bowls_/$bowlId'
-      path: '/bowls/$bowlId'
+    '/bowls/$bowlId': {
+      id: '/bowls/$bowlId'
+      path: '/$bowlId'
       fullPath: '/bowls/$bowlId'
       preLoaderRoute: typeof BowlsBowlIdImport
-      parentRoute: typeof rootRoute
+      parentRoute: typeof BowlsImport
     }
-    '/bowls_/add': {
-      id: '/bowls_/add'
-      path: '/bowls/add'
+    '/bowls/add': {
+      id: '/bowls/add'
+      path: '/add'
       fullPath: '/bowls/add'
       preLoaderRoute: typeof BowlsAddImport
+      parentRoute: typeof BowlsImport
+    }
+    '/bowls_/$bowlId/flakes/add': {
+      id: '/bowls_/$bowlId/flakes/add'
+      path: '/bowls/$bowlId/flakes/add'
+      fullPath: '/bowls/$bowlId/flakes/add'
+      preLoaderRoute: typeof BowlsBowlIdFlakesAddImport
       parentRoute: typeof rootRoute
     }
   }
@@ -79,49 +93,78 @@ declare module '@tanstack/react-router' {
 
 // Create and export the route tree
 
+interface BowlsRouteChildren {
+  BowlsBowlIdRoute: typeof BowlsBowlIdRoute
+  BowlsAddRoute: typeof BowlsAddRoute
+}
+
+const BowlsRouteChildren: BowlsRouteChildren = {
+  BowlsBowlIdRoute: BowlsBowlIdRoute,
+  BowlsAddRoute: BowlsAddRoute,
+}
+
+const BowlsRouteWithChildren = BowlsRoute._addFileChildren(BowlsRouteChildren)
+
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/bowls': typeof BowlsRoute
+  '/bowls': typeof BowlsRouteWithChildren
   '/bowls/$bowlId': typeof BowlsBowlIdRoute
   '/bowls/add': typeof BowlsAddRoute
+  '/bowls/$bowlId/flakes/add': typeof BowlsBowlIdFlakesAddRoute
 }
 
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/bowls': typeof BowlsRoute
+  '/bowls': typeof BowlsRouteWithChildren
   '/bowls/$bowlId': typeof BowlsBowlIdRoute
   '/bowls/add': typeof BowlsAddRoute
+  '/bowls/$bowlId/flakes/add': typeof BowlsBowlIdFlakesAddRoute
 }
 
 export interface FileRoutesById {
   __root__: typeof rootRoute
   '/': typeof IndexRoute
-  '/bowls': typeof BowlsRoute
-  '/bowls_/$bowlId': typeof BowlsBowlIdRoute
-  '/bowls_/add': typeof BowlsAddRoute
+  '/bowls': typeof BowlsRouteWithChildren
+  '/bowls/$bowlId': typeof BowlsBowlIdRoute
+  '/bowls/add': typeof BowlsAddRoute
+  '/bowls_/$bowlId/flakes/add': typeof BowlsBowlIdFlakesAddRoute
 }
 
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/bowls' | '/bowls/$bowlId' | '/bowls/add'
+  fullPaths:
+    | '/'
+    | '/bowls'
+    | '/bowls/$bowlId'
+    | '/bowls/add'
+    | '/bowls/$bowlId/flakes/add'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/bowls' | '/bowls/$bowlId' | '/bowls/add'
-  id: '__root__' | '/' | '/bowls' | '/bowls_/$bowlId' | '/bowls_/add'
+  to:
+    | '/'
+    | '/bowls'
+    | '/bowls/$bowlId'
+    | '/bowls/add'
+    | '/bowls/$bowlId/flakes/add'
+  id:
+    | '__root__'
+    | '/'
+    | '/bowls'
+    | '/bowls/$bowlId'
+    | '/bowls/add'
+    | '/bowls_/$bowlId/flakes/add'
   fileRoutesById: FileRoutesById
 }
 
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  BowlsRoute: typeof BowlsRoute
-  BowlsBowlIdRoute: typeof BowlsBowlIdRoute
-  BowlsAddRoute: typeof BowlsAddRoute
+  BowlsRoute: typeof BowlsRouteWithChildren
+  BowlsBowlIdFlakesAddRoute: typeof BowlsBowlIdFlakesAddRoute
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  BowlsRoute: BowlsRoute,
-  BowlsBowlIdRoute: BowlsBowlIdRoute,
-  BowlsAddRoute: BowlsAddRoute,
+  BowlsRoute: BowlsRouteWithChildren,
+  BowlsBowlIdFlakesAddRoute: BowlsBowlIdFlakesAddRoute,
 }
 
 export const routeTree = rootRoute
@@ -136,21 +179,29 @@ export const routeTree = rootRoute
       "children": [
         "/",
         "/bowls",
-        "/bowls_/$bowlId",
-        "/bowls_/add"
+        "/bowls_/$bowlId/flakes/add"
       ]
     },
     "/": {
       "filePath": "index.tsx"
     },
     "/bowls": {
-      "filePath": "bowls.tsx"
+      "filePath": "bowls.tsx",
+      "children": [
+        "/bowls/$bowlId",
+        "/bowls/add"
+      ]
     },
-    "/bowls_/$bowlId": {
-      "filePath": "bowls_.$bowlId.tsx"
+    "/bowls/$bowlId": {
+      "filePath": "bowls.$bowlId.tsx",
+      "parent": "/bowls"
     },
-    "/bowls_/add": {
-      "filePath": "bowls_.add.tsx"
+    "/bowls/add": {
+      "filePath": "bowls.add.tsx",
+      "parent": "/bowls"
+    },
+    "/bowls_/$bowlId/flakes/add": {
+      "filePath": "bowls_.$bowlId.flakes.add.tsx"
     }
   }
 }
