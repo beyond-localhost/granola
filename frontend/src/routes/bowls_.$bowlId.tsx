@@ -5,5 +5,11 @@ export const Route = createFileRoute("/bowls_/$bowlId")({
 });
 
 function RouteComponent() {
-  return <div>Hello "/bowls_/$bowlId"!</div>;
+  const params = Route.useParams();
+  return (
+    <div>
+      Hello "/bowls_/$bowlId"!
+      <span>{params.bowlId}</span>
+    </div>
+  );
 }

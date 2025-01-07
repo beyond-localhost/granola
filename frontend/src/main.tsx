@@ -1,4 +1,5 @@
 import "./misc/index.css"; // embed tailwindcss
+import "./lib/bootstrap";
 
 import { StrictMode } from "react";
 import ReactDOM from "react-dom/client";

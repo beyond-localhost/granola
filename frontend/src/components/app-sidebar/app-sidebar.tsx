@@ -1,34 +1,25 @@
+import * as React from "react";
 import {
   Sidebar,
   SidebarContent,
   SidebarFooter,
   SidebarGroup,
+  SidebarGroupAction,
   SidebarGroupContent,
   SidebarGroupLabel,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
 } from "#/components/ui/sidebar";
-import { Home, CircleCheck } from "lucide-react";
+import { Home, Plus } from "lucide-react";
 
 import { Link } from "@tanstack/react-router";
 
 import { Route as indexRoute } from "#/routes/index";
-
-const MENUS = [
-  {
-    id: 0,
-    name: "Home",
-    icon: Home,
-    to: indexRoute.to,
-  },
-  {
-    id: 1,
-    name: "Categories",
-    icon: CircleCheck,
-    to: "/bowls/",
-  },
-];
+import {
+  AppSidebarDynamicMenu,
+  AppSidebarDynamicMenuFallback,
+} from "./app-sidebar-dynamic-menu";
 
 function AppSidebar() {
   return (
@@ -37,21 +28,29 @@ function AppSidebar() {
         <SidebarGroup>
           <SidebarGroupLabel>Menu</SidebarGroupLabel>
           <SidebarGroupContent>
-            {MENUS.map((menu) => {
-              const IconComp = menu.icon;
-              return (
-                <SidebarMenu key={menu.id}>
-                  <SidebarMenuItem>
-                    <SidebarMenuButton asChild>
-                      <Link to={menu.to}>
-                        <IconComp />
-                        {menu.name}
-                      </Link>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                </SidebarMenu>
-              );
-            })}
+            <SidebarMenu>
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild>
+                  <Link to={indexRoute.to}>
+                    <Home />
+                    Home
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+        <SidebarGroup>
+          <SidebarGroupLabel>Bowls</SidebarGroupLabel>
+          <SidebarGroupAction asChild>
+            <Link to="/bowls/add">
+              <Plus />
+            </Link>
+          </SidebarGroupAction>
+          <SidebarGroupContent>
+            <React.Suspense fallback={<AppSidebarDynamicMenuFallback />}>
+              <AppSidebarDynamicMenu />
+            </React.Suspense>
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>

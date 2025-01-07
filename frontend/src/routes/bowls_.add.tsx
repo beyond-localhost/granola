@@ -3,10 +3,13 @@ import * as React from "react";
 import { Button } from "#/components/ui/button";
 import { Input } from "#/components/ui/input";
 import { Textarea } from "#/components/ui/textarea";
-import { createFileRoute } from "@tanstack/react-router";
-import * as bowlService from "@/go/bowls/BowlsService";
 import { LoaderPinwheel } from "lucide-react";
-import { LogDebug } from "@/runtime";
+
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import * as bowlService from "@/go/bowls/BowlsService";
+import { useAppSidebar } from "#/components/app-sidebar/app-sidebar-provider";
+
+import { Route as specificBowlRoute } from "#/routes/bowls_.$bowlId";
 
 export const Route = createFileRoute("/bowls_/add")({
   component: RouteComponent,
@@ -17,7 +20,7 @@ const DESCRIPTION_PLACEHOLDER = "무슨 일들이 일어날까요?";
 
 type FormState =
   | { status: "idle"; message: string }
-  | { status: "success"; message: string }
+  | { status: "success"; message: string; bowlId: number }
   | { status: "error"; message: string };
 
 const initialFormState: FormState = {
@@ -26,6 +29,9 @@ const initialFormState: FormState = {
 };
 
 function RouteComponent() {
+  const navigate = useNavigate({ from: Route.fullPath });
+  const { onAdd } = useAppSidebar();
+
   const [state, formAction, isPending] = React.useActionState<
     FormState,
     FormData
@@ -37,15 +43,28 @@ function RouteComponent() {
       name.length > 0 &&
       (typeof description === "string" || description === null)
     ) {
-      LogDebug(JSON.stringify({ name, description }));
-      await bowlService.Create(name, description);
-      return { status: "success", message: "Success to add the topic. " };
+      const newBowl = await bowlService.Create(name, description);
+      onAdd(newBowl);
+      return {
+        status: "success",
+        message: "Success to add the topic.",
+        bowlId: newBowl.id,
+      };
     }
     return {
       status: "error",
       message: "The name or description is invalid.",
     };
   }, initialFormState);
+
+  React.useEffect(() => {
+    if (state.status === "success") {
+      navigate({
+        to: specificBowlRoute.to,
+        params: { bowlId: state.bowlId.toString() },
+      });
+    }
+  }, [state, navigate]);
 
   return (
     <div>

@@ -39,29 +39,23 @@ export function BowlTable({ bowlsPromise }: Props) {
 
   return (
     <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead className="w-[100px] font-medium">Title</TableHead>
-          <TableHead>Description</TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
+      <div>
         {bowls.map((bowl) => {
           return (
-            <TableRow>
+            <Link to="/bowls/$bowlId" params={{ bowlId: bowl.id.toString() }}>
               <TableCell>{bowl.name}</TableCell>
               <TableCell>{bowl.description}</TableCell>
-            </TableRow>
+            </Link>
           );
         })}
-        <TableRow>
-          <TableCell className="text-right" colSpan={2}>
+        <div>
+          <div className="text-right">
             <Link from={bowlsRoute.fullPath} to={bowlAddRoute.to}>
               Add the category
             </Link>
-          </TableCell>
-        </TableRow>
-      </TableBody>
+          </div>
+        </div>
+      </div>
     </Table>
   );
 }
