@@ -16,6 +16,10 @@ func (s *FlakeService) GetAll() ([]Flake, error) {
 	return s.repo.GetAll()
 }
 
+func (s *FlakeService) GetAllByBowlId(bowlId int64) ([]Flake, error) {
+	return s.repo.GetAllByBowlId(bowlId)
+}
+
 func (s *FlakeService) GetById(id int64) (*Flake, error) {
 	return s.repo.GetById(id)
 }
@@ -27,3 +31,4 @@ func (s *FlakeService) UpdateById(id int64, update FlakeUpdate) (*Flake, error) 
 func (s *FlakeService) DeleteById(id int64, update FlakeUpdate) error {
 	return s.repo.DeleteById(id)
 }
+

@@ -22,7 +22,7 @@ type FlakeUpdate struct {
 func NewFlake(id int64, name string, description *string, bowlId int64) *Flake {
 	return &Flake{
 		Id:          id,
-		Name:        name,
+		Name:        name,	
 		Description: description,
 		BowlId:      bowlId,
 	}
@@ -31,6 +31,7 @@ func NewFlake(id int64, name string, description *string, bowlId int64) *Flake {
 type FlakeRepository interface {
 	Create(name string, description *string, bowlId int64) (*Flake, error)
 	GetAll() ([]Flake, error)
+	GetAllByBowlId(bowlId int64) ([]Flake, error)
 	GetById(id int64) (*Flake, error)
 	UpdateById(id int64, update FlakeUpdate) (*Flake, error)
 	DeleteById(id int64) error
@@ -70,6 +71,31 @@ func (r *SQLiteFlakeRepository) GetAll() ([]Flake, error) {
 	defer func() {
 		rows.Close()
 	}()
+
+	flakes := []Flake{}
+
+	for rows.Next() {
+		flake := Flake{}
+
+		err := rows.Scan(&flake.Id, &flake.Name, &flake.Description, &flake.BowlId)
+		if err != nil {
+			return nil, err
+		}
+
+		flakes = append(flakes, flake)
+	}
+
+	return flakes, nil
+}
+
+func (r *SQLiteFlakeRepository) GetAllByBowlId(bowlId int64) ([]Flake, error) {
+	rows, err := r.db.Query("select * from flakes where bowl_id = ?", bowlId)
+
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
 
 	flakes := []Flake{}
 
@@ -182,3 +208,4 @@ func (r *SQLiteFlakeRepository) DeleteById(id int64) error {
 
 	return nil
 }
+

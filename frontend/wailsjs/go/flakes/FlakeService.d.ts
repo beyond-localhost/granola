@@ -8,6 +8,8 @@ export function DeleteById(arg1:number,arg2:flakes.FlakeUpdate):Promise<void>;
 
 export function GetAll():Promise<Array<flakes.Flake>>;
 
+export function GetAllByBowlId(arg1:number):Promise<Array<flakes.Flake>>;
+
 export function GetById(arg1:number):Promise<flakes.Flake>;
 
 export function UpdateById(arg1:number,arg2:flakes.FlakeUpdate):Promise<flakes.Flake>;
