@@ -5,6 +5,7 @@ import (
 	"granola/db"
 	"granola/internal/bowls"
 	"granola/internal/flakes"
+	"granola/internal/todos"
 
 	"github.com/wailsapp/wails/v2"
 	"github.com/wailsapp/wails/v2/pkg/options"
@@ -22,6 +23,10 @@ func main() {
 
 	flakesRepo := flakes.NewSQLiteFlakeRepository(db)
 	flakesService := flakes.NewFlakeService(flakesRepo)
+
+	todosRepo := todos.NewSQLiteTodoRepository(db)
+	todosService := todos.NewTodosService(todosRepo)
+
 	app := NewApp()
 
 	// Create application with options
@@ -38,6 +43,7 @@ func main() {
 			app,
 			bowlsService,
 			flakesService,
+			todosService,
 		},
 	})
 
