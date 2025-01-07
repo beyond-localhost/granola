@@ -9,7 +9,6 @@ import { Textarea } from "#/components/ui/textarea";
 import { Input } from "#/components/ui/input";
 import { Button } from "#/components/ui/button";
 
-import { LogDebug } from "@/runtime/runtime";
 import * as flakesService from "@/go/flakes/FlakeService";
 
 export const Route = createFileRoute("/bowls_/$bowlId/flakes/add")({
@@ -41,29 +40,22 @@ function RouteComponent() {
   >(async function submitAction(_, formData) {
     const name = formData.get("name");
     const description = formData.get("description");
-    LogDebug(`The name is ${name} and the description is ${description}`);
 
     if (
       typeof name === "string" &&
       name.length > 0 &&
       (typeof description === "string" || description === null)
     ) {
-      LogDebug(`Before add flake`);
       const f = await flakesService.Create(name, description, bowlId);
-      LogDebug(`after add flake. flake: ${JSON.stringify(f, null, 2)}`);
     }
 
     try {
-      LogDebug(`Before invalidating route`);
       await router.invalidate({ sync: true });
-      LogDebug(`After invalidaing route`);
       return {
         status: "success",
         message: "Success to add the flake.",
       };
     } catch {
-      LogDebug(`invalidating route is failed..`);
-
       return {
         status: "error",
         message: "The name or description is invalid. or router is invalid",

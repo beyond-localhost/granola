@@ -14,6 +14,10 @@ export function GetAll() {
   return window['go']['flakes']['FlakeService']['GetAll']();
 }
 
+export function GetAllByBowlId(arg1) {
+  return window['go']['flakes']['FlakeService']['GetAllByBowlId'](arg1);
+}
+
 export function GetById(arg1) {
   return window['go']['flakes']['FlakeService']['GetById'](arg1);
 }
