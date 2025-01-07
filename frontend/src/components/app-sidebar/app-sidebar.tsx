@@ -31,7 +31,7 @@ function AppSidebar() {
             <SidebarMenu>
               <SidebarMenuItem>
                 <SidebarMenuButton asChild>
-                  <Link to={indexRoute.to}>
+                  <Link to={indexRoute.to} preload="viewport">
                     <Home />
                     Home
                   </Link>
