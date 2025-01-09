@@ -7,6 +7,6 @@ export function Create(arg1:number,arg2:time.Time):Promise<todos.Todo>;
 
 export function GetAllByFlakeId(arg1:number):Promise<Array<todos.Todo>>;
 
-export function GetAllByRange(arg1:time.Time,arg2:time.Time):Promise<Array<todos.Todo>>;
+export function GetAllByRange(arg1:time.Time,arg2:time.Time):Promise<Array<todos.TodoWithFlakeName>>;
 
-export function SetDone(arg1:number):Promise<todos.Todo>;
+export function SetDone(arg1:number):Promise<boolean>;

@@ -93,7 +93,7 @@ export namespace todos {
 	    id: number;
 	    flakeId: number;
 	    done: boolean;
-	    scheduledAt: time.Time;
+	    scheduledAt: Date;
 	
 	    static createFrom(source: any = {}) {
 	        return new Todo(source);
@@ -104,26 +104,28 @@ export namespace todos {
 	        this.id = source["id"];
 	        this.flakeId = source["flakeId"];
 	        this.done = source["done"];
-	        this.scheduledAt = this.convertValues(source["scheduledAt"], time.Time);
+	        this.scheduledAt = new Date(source["scheduledAt"]);
+	    }
+	}
+	export class TodoWithFlakeName {
+	    id: number;
+	    flakeId: number;
+	    done: boolean;
+	    scheduledAt: Date;
+	    flakeName: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new TodoWithFlakeName(source);
 	    }
 	
-		convertValues(a: any, classs: any, asMap: boolean = false): any {
-		    if (!a) {
-		        return a;
-		    }
-		    if (a.slice && a.map) {
-		        return (a as any[]).map(elem => this.convertValues(elem, classs));
-		    } else if ("object" === typeof a) {
-		        if (asMap) {
-		            for (const key of Object.keys(a)) {
-		                a[key] = new classs(a[key]);
-		            }
-		            return a;
-		        }
-		        return new classs(a);
-		    }
-		    return a;
-		}
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.id = source["id"];
+	        this.flakeId = source["flakeId"];
+	        this.done = source["done"];
+	        this.scheduledAt = new Date(source["scheduledAt"]);
+	        this.flakeName = source["flakeName"];
+	    }
 	}
 
 }

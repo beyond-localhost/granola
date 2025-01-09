@@ -11,7 +11,12 @@ type Todo struct {
 	Id int64 `json:"id"`
 	FlakeId int64 `json:"flakeId"`
 	Done bool `json:"done"`
-	ScheduledAt time.Time `json:"scheduledAt"`
+	ScheduledAt time.Time `json:"scheduledAt" ts_type:"Date" ts_transform:"new Date(__VALUE__)"`
+}
+
+type TodoWithFlakeName struct {
+	Todo
+	FlakeName string `json:"flakeName"`
 }
 
 func NewTodo(id int64, flakeId int64, done bool, scheduledAt time.Time) *Todo {
@@ -26,8 +31,8 @@ func NewTodo(id int64, flakeId int64, done bool, scheduledAt time.Time) *Todo {
 type TodoRepository interface {
 	Create(flakeId int64, scheduledAt time.Time) (*Todo, error)
 	GetAllByFlakeId(flakeId int64) ([]Todo, error)
-	GetAllByRange(from time.Time, to time.Time) ([]Todo, error)
-	SetDone(id int64) (*Todo, error)
+	GetAllByRange(from time.Time, to time.Time) ([]TodoWithFlakeName, error)
+	SetDone(id int64) (bool, error)
 }
 
 
@@ -91,18 +96,29 @@ func (r *SQLiteTodoRepository) GetAllByFlakeId(flakeId int64) ([]Todo, error) {
 	return ret, nil
 }
 
-func (r * SQLiteTodoRepository) GetAllByRange(from time.Time, to time.Time) ([]Todo, error) {
-	rows, err := r.db.Query("select * from todos where scheduled_at between ? and ?", from, to)
+func (r * SQLiteTodoRepository) GetAllByRange(from time.Time, to time.Time) ([]TodoWithFlakeName, error) {
+	rows, err := r.db.Query(`
+		select * t.*, f.name as flake_name
+		from todos t
+		join flakes f on t.flake_id = f.id
+		where scheduled_at between ? and ?
+	`, from, to)
 	
 	if err != nil {
 		return nil, err
 	}
 
-	ret := make([]Todo, 0)
+	ret := make([]TodoWithFlakeName, 0)
 
 	for rows.Next() {
-		todo := Todo{}
-		err := rows.Scan(&todo.Id, &todo.FlakeId, &todo.Done, &todo.ScheduledAt)
+		todo := TodoWithFlakeName{}
+		err := rows.Scan(
+			&todo.Id,
+			&todo.FlakeId,
+			&todo.Done,
+			&todo.ScheduledAt,
+			&todo.FlakeName,
+		)
 		if err != nil {
 			return nil, err
 		}
@@ -112,32 +128,31 @@ func (r * SQLiteTodoRepository) GetAllByRange(from time.Time, to time.Time) ([]T
 }
 
 
-func (r * SQLiteTodoRepository) SetDone(id int64) (*Todo, error) {
-	return transaction.Tx(r.db, func(tx *sql.Tx) (*Todo, error) {
+func (r * SQLiteTodoRepository) SetDone(id int64) (bool, error) {
+	return transaction.Tx(r.db, func(tx *sql.Tx) (bool, error) {
 		todo, err := getByIdTx(tx, id)
 		if err != nil {
-			return nil, err
+			return false, err
 		}
 		
-		lastDone := todo.Done
+		nextDone := !todo.Done
 
-		ret, err := tx.Exec("update todos set done = ? where id = ?", !lastDone, id)
+		ret, err := tx.Exec("update todos set done = ? where id = ?", nextDone, id)
 		if err != nil {
-			return nil, err
+			return false, err
 		}
 		
 		affected, err := ret.RowsAffected()
 		
 		if err != nil {
-			return nil, fmt.Errorf("unsupported rowsAffected")
+			return false, fmt.Errorf("unsupported rowsAffected")
 		}
 
 		if affected != 1 {
-			return nil, fmt.Errorf("expected affected row is 1 but found %d", affected)
+			return false, fmt.Errorf("expected affected row is 1 but found %d", affected)
 		}
-		todo.Done = !lastDone
-
-		return todo, nil
+		
+		return nextDone, nil
 	})
 }
 
