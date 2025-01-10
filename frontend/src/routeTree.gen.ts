@@ -11,6 +11,7 @@
 // Import Routes
 
 import { Route as rootRoute } from './routes/__root'
+import { Route as CalendarImport } from './routes/calendar'
 import { Route as BowlsImport } from './routes/bowls'
 import { Route as IndexImport } from './routes/index'
 import { Route as BowlsAddImport } from './routes/bowls.add'
@@ -18,6 +19,12 @@ import { Route as BowlsBowlIdImport } from './routes/bowls.$bowlId'
 import { Route as BowlsBowlIdFlakesAddImport } from './routes/bowls_.$bowlId.flakes.add'
 
 // Create/Update Routes
+
+const CalendarRoute = CalendarImport.update({
+  id: '/calendar',
+  path: '/calendar',
+  getParentRoute: () => rootRoute,
+} as any)
 
 const BowlsRoute = BowlsImport.update({
   id: '/bowls',
@@ -67,6 +74,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof BowlsImport
       parentRoute: typeof rootRoute
     }
+    '/calendar': {
+      id: '/calendar'
+      path: '/calendar'
+      fullPath: '/calendar'
+      preLoaderRoute: typeof CalendarImport
+      parentRoute: typeof rootRoute
+    }
     '/bowls/$bowlId': {
       id: '/bowls/$bowlId'
       path: '/$bowlId'
@@ -108,6 +122,7 @@ const BowlsRouteWithChildren = BowlsRoute._addFileChildren(BowlsRouteChildren)
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/bowls': typeof BowlsRouteWithChildren
+  '/calendar': typeof CalendarRoute
   '/bowls/$bowlId': typeof BowlsBowlIdRoute
   '/bowls/add': typeof BowlsAddRoute
   '/bowls/$bowlId/flakes/add': typeof BowlsBowlIdFlakesAddRoute
@@ -116,6 +131,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/bowls': typeof BowlsRouteWithChildren
+  '/calendar': typeof CalendarRoute
   '/bowls/$bowlId': typeof BowlsBowlIdRoute
   '/bowls/add': typeof BowlsAddRoute
   '/bowls/$bowlId/flakes/add': typeof BowlsBowlIdFlakesAddRoute
@@ -125,6 +141,7 @@ export interface FileRoutesById {
   __root__: typeof rootRoute
   '/': typeof IndexRoute
   '/bowls': typeof BowlsRouteWithChildren
+  '/calendar': typeof CalendarRoute
   '/bowls/$bowlId': typeof BowlsBowlIdRoute
   '/bowls/add': typeof BowlsAddRoute
   '/bowls_/$bowlId/flakes/add': typeof BowlsBowlIdFlakesAddRoute
@@ -135,6 +152,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/bowls'
+    | '/calendar'
     | '/bowls/$bowlId'
     | '/bowls/add'
     | '/bowls/$bowlId/flakes/add'
@@ -142,6 +160,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/bowls'
+    | '/calendar'
     | '/bowls/$bowlId'
     | '/bowls/add'
     | '/bowls/$bowlId/flakes/add'
@@ -149,6 +168,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/bowls'
+    | '/calendar'
     | '/bowls/$bowlId'
     | '/bowls/add'
     | '/bowls_/$bowlId/flakes/add'
@@ -158,12 +178,14 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   BowlsRoute: typeof BowlsRouteWithChildren
+  CalendarRoute: typeof CalendarRoute
   BowlsBowlIdFlakesAddRoute: typeof BowlsBowlIdFlakesAddRoute
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   BowlsRoute: BowlsRouteWithChildren,
+  CalendarRoute: CalendarRoute,
   BowlsBowlIdFlakesAddRoute: BowlsBowlIdFlakesAddRoute,
 }
 
@@ -179,6 +201,7 @@ export const routeTree = rootRoute
       "children": [
         "/",
         "/bowls",
+        "/calendar",
         "/bowls_/$bowlId/flakes/add"
       ]
     },
@@ -191,6 +214,9 @@ export const routeTree = rootRoute
         "/bowls/$bowlId",
         "/bowls/add"
       ]
+    },
+    "/calendar": {
+      "filePath": "calendar.tsx"
     },
     "/bowls/$bowlId": {
       "filePath": "bowls.$bowlId.tsx",

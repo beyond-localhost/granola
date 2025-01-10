@@ -8,7 +8,7 @@ export const Route = createRootRoute({
     <>
       <AppSidebarProvider>
         <AppSidebar />
-        <main className="p-2 w-full">
+        <main className="w-full">
           <Outlet />
         </main>
       </AppSidebarProvider>

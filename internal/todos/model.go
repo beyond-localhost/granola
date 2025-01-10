@@ -29,10 +29,11 @@ func NewTodo(id int64, flakeId int64, done bool, scheduledAt time.Time) *Todo {
 }
 
 type TodoRepository interface {
-	Create(flakeId int64, scheduledAt time.Time) (*Todo, error)
+	Create(flakeId int64, scheduledAt time.Time) (*TodoWithFlakeName, error)
 	GetAllByFlakeId(flakeId int64) ([]Todo, error)
 	GetAllByRange(from time.Time, to time.Time) ([]TodoWithFlakeName, error)
 	SetDone(id int64) (bool, error)
+	Remove(id int64) error
 }
 
 
@@ -44,19 +45,37 @@ func NewSQLiteTodoRepository(db *sql.DB) TodoRepository {
 	return &SQLiteTodoRepository{db}
 }
 
-func (r *SQLiteTodoRepository) Create(flakeId int64, scheduledAt time.Time) (*Todo, error) {
-	result, err := r.db.Exec("insert into todos (flake_id scheduled_at) values (?, ?)", flakeId, scheduledAt)
+func (r *SQLiteTodoRepository) Create(flakeId int64, scheduledAt time.Time) (*TodoWithFlakeName, error) {
+
+	return transaction.Tx(r.db, func(tx *sql.Tx) (*TodoWithFlakeName, error) {
+		zero := TodoWithFlakeName{}
+		result, err := tx.Exec("insert into todos (flake_id scheduled_at) values (?, ?)", flakeId, scheduledAt)
+		if err != nil {
+			return &zero, err
+		}
+		id, err := result.LastInsertId()
+		if err != nil {
+			return nil, err
+		}
+
+		row := tx.QueryRow(`
+			select t.*, f.name as flake_name
+			from todos t
+			join flakes f on t.flake_id = f.id
+			where t.id = ?
+		`, id)
+
+
+		if err = row.Scan(&zero.Id, &zero.FlakeId, &zero.Done, &zero.ScheduledAt, &zero.FlakeName); err != nil {
+			return &zero, err
+		}
+
+		return &zero, nil
+		
+	})
 	
-	if err != nil {
-		return nil, err
-	}
 	
-	id, err := result.LastInsertId()
-	if err != nil {
-		return nil, err
-	}
 	
-	return NewTodo(id, flakeId, false, scheduledAt), nil
 }
 
 func getByIdTx(tx *sql.Tx, id int64) (*Todo, error) {
@@ -98,7 +117,7 @@ func (r *SQLiteTodoRepository) GetAllByFlakeId(flakeId int64) ([]Todo, error) {
 
 func (r * SQLiteTodoRepository) GetAllByRange(from time.Time, to time.Time) ([]TodoWithFlakeName, error) {
 	rows, err := r.db.Query(`
-		select * t.*, f.name as flake_name
+		select t.*, f.name as flake_name
 		from todos t
 		join flakes f on t.flake_id = f.id
 		where scheduled_at between ? and ?
@@ -156,3 +175,27 @@ func (r * SQLiteTodoRepository) SetDone(id int64) (bool, error) {
 	})
 }
 
+
+
+func (r * SQLiteTodoRepository) Remove(id int64) error {
+	_, err := transaction.Tx(r.db, func(tx *sql.Tx) (bool, error) {
+		result, err := tx.Exec("delete from todos where id = ?", id)
+	
+		if err != nil {
+			return false, err
+		}
+
+		rows, err := result.RowsAffected()
+		
+		if err != nil {
+			return false, err
+		}
+
+		if rows != 1 {
+			return false, fmt.Errorf("the affected rows should be only 1 but affected by %d rows", rows)
+		}
+		return true, nil
+	})
+	
+	return err
+}

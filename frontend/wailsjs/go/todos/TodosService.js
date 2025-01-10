@@ -14,6 +14,10 @@ export function GetAllByRange(arg1, arg2) {
   return window['go']['todos']['TodosService']['GetAllByRange'](arg1, arg2);
 }
 
+export function Remove(arg1) {
+  return window['go']['todos']['TodosService']['Remove'](arg1);
+}
+
 export function SetDone(arg1) {
   return window['go']['todos']['TodosService']['SetDone'](arg1);
 }
