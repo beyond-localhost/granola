@@ -321,3 +321,4 @@ function CalendarProvider({ initialData, initialDate, children }: Props) {
 }
 
 export { CalendarProvider, useCalendarGridContext, useCurrentDateContext };
+export type { CalendarCell };

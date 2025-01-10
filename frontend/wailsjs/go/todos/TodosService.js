@@ -6,6 +6,10 @@ export function Create(arg1, arg2) {
   return window['go']['todos']['TodosService']['Create'](arg1, arg2);
 }
 
+export function GetAll() {
+  return window['go']['todos']['TodosService']['GetAll']();
+}
+
 export function GetAllByFlakeId(arg1) {
   return window['go']['todos']['TodosService']['GetAllByFlakeId'](arg1);
 }
