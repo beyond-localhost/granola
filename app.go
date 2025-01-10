@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"granola/internal/bowls"
 	"granola/internal/flakes"
 	"granola/internal/todos"
@@ -47,7 +48,9 @@ func (a *App) domReady(_ context.Context) {
 	if err != nil {
 		return
 	}
+	fmt.Println("(backend) Event emit before: initialIze")
 	runtime.EventsEmit(a.ctx, "initialize", bowls, flakes, todos)	
+	fmt.Println("(backend) Event emit after: initialIze")
 }
 
 

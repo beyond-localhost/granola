@@ -1,5 +1,5 @@
 import AppSidebar from "#/components/app-sidebar/app-sidebar";
-import { AppSidebarProvider } from "#/components/app-sidebar/app-sidebar-provider";
+
 import { createRootRoute, Outlet } from "@tanstack/react-router";
 import { TanStackRouterDevtools } from "@tanstack/router-devtools";
 
@@ -20,14 +20,13 @@ export const Route = createRootRoute({
     <BowlContextProvider initialData={initialBowlsPromise}>
       <FlakeContextProvider initialFlakes={initialFlakesPromise}>
         <TodoContextProvider initialData={initialTodosPromise}>
-          {/* <AppSidebarProvider> */}
           <SidebarProvider>
             <AppSidebar />
             <main className="w-full">
               <Outlet />
             </main>
           </SidebarProvider>
-          {/* </AppSidebarProvider> */}
+
           <TanStackRouterDevtools />
         </TodoContextProvider>
       </FlakeContextProvider>

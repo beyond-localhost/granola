@@ -8,7 +8,7 @@ const initialFlakes = new Deferred<model.flakes.Flake[]>();
 const initialFlakesPromise = initialFlakes.promise();
 const initialTodos = new Deferred<model.todos.Todo[]>();
 const initialTodosPromise = initialTodos.promise();
-
+LogDebug("(frontend) module initialized");
 EventsOnce(
   "initialize",
   (
@@ -16,6 +16,7 @@ EventsOnce(
     flakes: model.flakes.Flake[],
     todos: model.todos.Todo[]
   ) => {
+    LogDebug("(frontend) initialize hook...");
     LogDebug(JSON.stringify(bowls));
     LogDebug(JSON.stringify(flakes));
     LogDebug(JSON.stringify(todos));
