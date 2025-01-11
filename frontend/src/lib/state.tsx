@@ -316,7 +316,12 @@ export {
   useFlakeContext,
   TodoContextProvider,
   useTodoContext,
+
+  // utils
+  toDateKey,
 };
+
+export type { DateKey };
 
 // type Store<T> = UseBoundStore<StoreApi<T>>;
 
