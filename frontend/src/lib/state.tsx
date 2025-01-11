@@ -1,5 +1,7 @@
 import * as React from "react";
 import { createStore } from "zustand";
+import { useShallow } from "zustand/shallow";
+
 import { useStoreWithEqualityFn } from "zustand/traditional";
 
 import * as model from "@/go/models";
@@ -165,23 +167,43 @@ function useFlakeContext<T>(
   if (store == undefined) {
     throw new Error("useBowlContext should be called within FlakeProvider");
   }
-  return useStoreWithEqualityFn(store, selector, equalityFn);
+  return useStoreWithEqualityFn(store, useShallow(selector), equalityFn);
 }
+
+// YYYY-MM-DD
+type DateKey =
+  `${number}${number}${number}${number}-${number}${number}-${number}${number}`;
+const DATE_REGEX = /^\d{4}-\d{2}-\d{2}$/;
+
+const predicateDateKey = (v: string): v is DateKey => DATE_REGEX.test(v);
+
+const toDateKey = (d: Date): DateKey => {
+  const ret = `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, "0")}-${d.getDate().toString().padStart(2, "0")}`;
+  assert(predicateDateKey(ret), `the ${ret} is not YYYY-MM-DD format`);
+  return ret;
+};
 
 type Todo = model.todos.Todo;
 type TodoState = {
-  map: Map<Id, Todo>;
+  map: Map<DateKey, Todo[]>;
   add: (todo: Todo) => void;
-  setDone: (id: Id, next: boolean) => void;
-  remove: (id: Id) => void;
+  setDone: (todo: Todo, next: boolean) => void;
+  remove: (todo: Todo) => void;
   removeByFlakeId: (flakeId: Id) => void;
 };
 
 function createTodoStore(initialData: Todo[]) {
-  const map = new Map<Id, Todo>();
+  const map = new Map<DateKey, Todo[]>();
   for (let i = 0; i < initialData.length; i++) {
     const todo = initialData[i];
-    map.set(todo.id, todo);
+    const dateKey = toDateKey(todo.scheduledAt);
+    if (map.get(dateKey) == undefined) {
+      map.set(dateKey, []);
+    }
+
+    const todoList = map.get(dateKey)!;
+    todoList.push(todo);
+    todoList.sort((a, b) => a.id - b.id);
   }
 
   return createStore<TodoState>()((set) => {
@@ -190,40 +212,69 @@ function createTodoStore(initialData: Todo[]) {
       add: (todo: Todo) =>
         set((state) => {
           const newMap = new Map(state.map);
-          newMap.set(todo.id, todo);
+          const dateKey = toDateKey(todo.scheduledAt);
+          if (newMap.get(dateKey) == undefined) {
+            newMap.set(dateKey, []);
+          }
+
+          const todoList = newMap.get(dateKey)!;
+          todoList.push(todo);
+          todoList.sort((a, b) => a.id - b.id);
           return {
             map: newMap,
           };
         }),
-      setDone: (id: Id, next: boolean) =>
+      setDone: (todo: Todo, next: boolean) =>
         set((state) => {
           const newMap = new Map(state.map);
-          const todo = newMap.get(id);
-          assert(todo != undefined, `The todo(${id}) should not be nullable`);
+          const todoList = newMap.get(toDateKey(todo.scheduledAt));
+          assert(
+            Array.isArray(todoList),
+            `There is no existing todoList when updating the todo: ${JSON.stringify(todo, null, 4)}`
+          );
+          const targetIndex = todoList.findIndex((t) => t.id === todo.id);
+          assert(
+            targetIndex !== -1,
+            `The todo: ${JSON.stringify(todo, null, 4)} is not existing in the backing array: ${todoList.join(", ")}`
+          );
           const newTodo = new model.todos.Todo();
           newTodo.id = todo.id;
           newTodo.flakeId = todo.flakeId;
           newTodo.done = next;
           newTodo.scheduledAt = todo.scheduledAt;
-          newMap.set(newTodo.id, newTodo);
+          todoList[targetIndex] = newTodo;
           return {
             map: newMap,
           };
         }),
-      remove: (id: Id) =>
+      remove: (todo: Todo) =>
         set((state) => {
           const newMap = new Map(state.map);
-          newMap.delete(id);
+          const key = toDateKey(todo.scheduledAt);
+          const todoList = newMap.get(key);
+          assert(
+            Array.isArray(todoList),
+            `There is no existing todoList when deleting the todo: ${JSON.stringify(todo, null, 4)}`
+          );
+          const filtered = todoList.filter((t) => t.id !== todo.id);
+          if (filtered.length === 0) {
+            newMap.delete(key);
+          } else {
+            newMap.set(key, filtered);
+          }
           return {
             map: newMap,
           };
         }),
       removeByFlakeId: (flakeId: Id) =>
         set((state) => {
-          const filtered = Array.from(state.map.entries()).filter(
-            ([_, value]) => value.flakeId !== flakeId
-          );
-          const newMap = new Map(filtered);
+          const newMap = new Map(state.map);
+          for (const [key, todoList] of newMap) {
+            newMap.set(
+              key,
+              todoList.filter((todo) => todo.flakeId !== flakeId)
+            );
+          }
           return {
             map: newMap,
           };
@@ -242,7 +293,8 @@ function useTodoContext<T>(
   if (store == undefined) {
     throw new Error("useBowlContext should be called within FlakeProvider");
   }
-  return useStoreWithEqualityFn(store, selector, equalityFn);
+
+  return useStoreWithEqualityFn(store, useShallow(selector), equalityFn);
 }
 
 function TodoContextProvider(
