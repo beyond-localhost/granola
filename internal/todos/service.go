@@ -34,6 +34,10 @@ func (s *TodosService) Create(flakeId int64, scheduledAtISO string) (*TodoWithFl
 	return s.repo.Create(flakeId, scheduledAt)
 }
 
+func (s *TodosService) GetAll() ([]Todo, error) {
+	return s.repo.GetAll()
+}
+
 func (s *TodosService) GetAllByFlakeId(flakeId int64) ([]Todo, error) {
 	return s.repo.GetAllByFlakeId(flakeId)
 }

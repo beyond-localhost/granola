@@ -30,6 +30,7 @@ func NewTodo(id int64, flakeId int64, done bool, scheduledAt time.Time) *Todo {
 
 type TodoRepository interface {
 	Create(flakeId int64, scheduledAt time.Time) (*TodoWithFlakeName, error)
+	GetAll() ([]Todo, error)
 	GetAllByFlakeId(flakeId int64) ([]Todo, error)
 	GetAllByRange(from time.Time, to time.Time) ([]TodoWithFlakeName, error)
 	SetDone(id int64) (bool, error)
@@ -90,6 +91,28 @@ func getByIdTx(tx *sql.Tx, id int64) (*Todo, error) {
 	}
 	
 	return &todo, nil
+}
+
+func (r *SQLiteTodoRepository) GetAll() ([]Todo, error) {
+	rows, err := r.db.Query("select * from todos")
+	
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	ret := make([]Todo, 0)
+	for rows.Next() {
+		todo := Todo{}
+		err := rows.Scan(&todo.Id, &todo.FlakeId, &todo.Done, &todo.ScheduledAt)
+		if err != nil {
+			return nil, err
+		}
+		ret = append(ret, todo)
+	}
+	
+	return ret, nil
 }
 
 

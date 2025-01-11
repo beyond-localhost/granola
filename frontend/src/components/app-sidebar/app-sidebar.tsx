@@ -16,10 +16,7 @@ import { Home, Plus } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 
 import { Route as indexRoute } from "#/routes/index";
-import {
-  AppSidebarDynamicMenu,
-  AppSidebarDynamicMenuFallback,
-} from "./app-sidebar-dynamic-menu";
+import { AppSidebarDynamicMenu } from "./app-sidebar-dynamic-menu";
 
 function AppSidebar() {
   return (
@@ -48,9 +45,7 @@ function AppSidebar() {
             </Link>
           </SidebarGroupAction>
           <SidebarGroupContent>
-            <React.Suspense fallback={<AppSidebarDynamicMenuFallback />}>
-              <AppSidebarDynamicMenu />
-            </React.Suspense>
+            <AppSidebarDynamicMenu />
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>

@@ -7,9 +7,9 @@ import { LoaderPinwheel } from "lucide-react";
 
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import * as bowlService from "@/go/bowls/BowlsService";
-import { useAppSidebar } from "#/components/app-sidebar/app-sidebar-provider";
 
 import { Route as specificBowlRoute } from "#/routes/bowls.$bowlId";
+import { useBowlContext } from "#/lib/state";
 
 export const Route = createFileRoute("/bowls/add")({
   component: RouteComponent,
@@ -29,8 +29,8 @@ const initialFormState: FormState = {
 };
 
 function RouteComponent() {
-  const { onAdd } = useAppSidebar();
   const navigate = useNavigate({ from: Route.fullPath });
+  const add = useBowlContext((state) => state.add);
 
   const [state, formAction, isPending] = React.useActionState<
     FormState,
@@ -44,7 +44,7 @@ function RouteComponent() {
       (typeof description === "string" || description === null)
     ) {
       const newBowl = await bowlService.Create(name, description);
-      onAdd(newBowl);
+      add(newBowl);
       return {
         status: "success",
         message: "Success to add the topic.",

@@ -1,20 +1,16 @@
 import { Link } from "@tanstack/react-router";
-import {
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  SidebarMenuSkeleton,
-} from "../ui/sidebar";
+import { SidebarMenu, SidebarMenuButton, SidebarMenuItem } from "../ui/sidebar";
 
-import { useAppSidebar } from "./app-sidebar-provider";
+import { useBowlContext } from "#/lib/state";
 
 export function AppSidebarDynamicMenu() {
-  const { bowls } = useAppSidebar();
+  const bowlMap = useBowlContext((state) => state.map);
+  const bowls = Array.from(bowlMap);
   return (
     <SidebarMenu>
-      {bowls.map((bowl) => {
+      {bowls.map(([bowlId, bowl]) => {
         return (
-          <SidebarMenuItem key={bowl.id}>
+          <SidebarMenuItem key={bowlId}>
             <AppSidebarDynamicMenuItem id={bowl.id} name={bowl.name} />
           </SidebarMenuItem>
         );
@@ -37,16 +33,5 @@ function AppSidebarDynamicMenuItem({ id, name }: { id: number; name: string }) {
         <span>{name}</span>
       </Link>
     </SidebarMenuButton>
-  );
-}
-
-export function AppSidebarDynamicMenuFallback() {
-  return (
-    <SidebarMenu>
-      <SidebarMenuSkeleton />
-      <SidebarMenuSkeleton />
-      <SidebarMenuSkeleton />
-      <SidebarMenuSkeleton />
-    </SidebarMenu>
   );
 }

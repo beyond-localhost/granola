@@ -1,6 +1,6 @@
 import * as React from "react";
 
-import { useNavigate, useRouter } from "@tanstack/react-router";
+import { useNavigate } from "@tanstack/react-router";
 import { createFileRoute } from "@tanstack/react-router";
 
 import { LoaderPinwheel } from "lucide-react";
@@ -10,6 +10,7 @@ import { Input } from "#/components/ui/input";
 import { Button } from "#/components/ui/button";
 
 import * as flakesService from "@/go/flakes/FlakeService";
+import { useFlakeContext } from "#/lib/state";
 
 export const Route = createFileRoute("/bowls_/$bowlId/flakes/add")({
   component: RouteComponent,
@@ -29,10 +30,10 @@ const initialFormState: FormState = {
 };
 
 function RouteComponent() {
-  const router = useRouter();
   const params = Route.useParams();
   const navigate = useNavigate({ from: Route.fullPath });
   const bowlId = Number(params.bowlId);
+  const add = useFlakeContext((state) => state.add);
 
   const [state, formAction, isPending] = React.useActionState<
     FormState,
@@ -47,10 +48,10 @@ function RouteComponent() {
       (typeof description === "string" || description === null)
     ) {
       const f = await flakesService.Create(name, description, bowlId);
+      add(f);
     }
 
     try {
-      await router.invalidate({ sync: true });
       return {
         status: "success",
         message: "Success to add the flake.",

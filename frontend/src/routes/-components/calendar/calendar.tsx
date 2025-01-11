@@ -6,6 +6,8 @@ import {
 } from "#/lib/todo-calendar";
 
 import { cn } from "#/lib/utils";
+import { useTodoContext } from "#/lib/state";
+import { assert } from "#/lib/assert";
 
 function CalendarHeader() {
   const { next, prev, currentDate } = useCurrentDateContext();
@@ -19,8 +21,8 @@ function CalendarHeader() {
           {year}년 {month}월
         </h1>
         <div>
-          <button onClick={() => prev(currentDate, 3)}>이전달</button>
-          <button onClick={() => next(currentDate, 3)}>다음달</button>
+          <button onClick={() => prev()}>이전달</button>
+          <button onClick={() => next()}>다음달</button>
         </div>
       </div>
       <div className="mt-2">
@@ -72,12 +74,15 @@ function CalendarBody() {
 }
 
 function CalendarCell({ cell }: { cell: CalendarCell }) {
+  const todoList = useTodoContext((state) => {
+    return state.map.get(cell.key) || [];
+  });
   return (
     <div>
-      <span>{cell.meta.date}일</span>
+      <span>{cell.date}일</span>
       <ul>
-        {cell.todos.map((todo) => {
-          return <li key={todo.id}>{todo.flakeName}</li>;
+        {todoList.map((todo) => {
+          return <li key={todo.id}>flakeName을 집어넣어야 함</li>;
         })}
       </ul>
     </div>
