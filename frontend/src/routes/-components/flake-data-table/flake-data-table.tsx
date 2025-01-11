@@ -1,14 +1,17 @@
-// TODO make the data table
-import * as React from "react";
-import * as model from "@/go/models";
+import { useFlakeContext } from "#/lib/state";
 
 type Props = {
   bowlId: number;
-  flakesPromise: Promise<Array<model.flakes.Flake>>;
 };
 
-function FlakeDataTable({ bowlId, flakesPromise }: Props) {
-  const flakes = React.use(flakesPromise);
+function FlakeDataTable({ bowlId }: Props) {
+  const flakes = useFlakeContext((state) => {
+    const map = state.map;
+    const flakes = Array.from(map.values()).filter(
+      (flake) => flake.bowlId === bowlId
+    );
+    return flakes;
+  });
 
   return (
     <ul>

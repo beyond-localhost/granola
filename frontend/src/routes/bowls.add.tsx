@@ -29,7 +29,6 @@ const initialFormState: FormState = {
 };
 
 function RouteComponent() {
-  // const { onAdd } = useAppSidebar();
   const navigate = useNavigate({ from: Route.fullPath });
   const add = useBowlContext((state) => state.add);
 
