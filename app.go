@@ -2,15 +2,11 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"granola/internal/bowls"
 	"granola/internal/flakes"
 	"granola/internal/todos"
-
-	"github.com/wailsapp/wails/v2/pkg/runtime"
 )
 
-// App struct
 type App struct {
 	ctx context.Context
 	bowlsService *bowls.BowlsService
@@ -32,25 +28,3 @@ func NewApp(bowlsService *bowls.BowlsService, flakeService *flakes.FlakeService,
 func (a *App) startup(ctx context.Context) {
 	a.ctx = ctx
 }
-
-func (a *App) domReady(_ context.Context) {
-	bowls, err := a.bowlsService.GetAll()
-	if err != nil {
-		return 
-	}
-	flakes, err := a.flakesService.GetAll()
-	if err != nil {
-		return
-	}
-
-	todos, err := a.todosService.GetAll()
-	
-	if err != nil {
-		return
-	}
-	fmt.Println("(backend) Event emit before: initialIze")
-	runtime.EventsEmit(a.ctx, "initialize", bowls, flakes, todos)	
-	fmt.Println("(backend) Event emit after: initialIze")
-}
-
-
