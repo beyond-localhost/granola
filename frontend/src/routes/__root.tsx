@@ -28,13 +28,12 @@ export const Route = createRootRoute({
               <main className="w-full">
                 <Outlet />
               </main>
+              <GlobalOutlet />
             </SidebarProvider>
-
             <TanStackRouterDevtools />
           </TodoContextProvider>
         </FlakeContextProvider>
       </BowlContextProvider>
-      <GlobalOutlet />
     </GlobalOutletProvider>
   ),
 });

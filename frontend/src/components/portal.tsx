@@ -81,9 +81,6 @@ function GlobalOutletProvider({ children }: { children: React.ReactNode }) {
 
 function GlobalOutlet() {
   const outlet = React.use(OutletContext);
-  if (outlet == null) {
-    throw new Error(`Globaloutlet should be within GlobalOutletProvider`);
-  }
   return outlet;
 }
 
@@ -97,24 +94,9 @@ function useGlobalOutletSetter() {
   return ctx;
 }
 
-function Portal({
-  id,
-  children,
-  container = document.body,
-}: {
-  id: ReactNodeKey;
-  children: React.ReactNode;
-  container?: Element;
-}) {
-  const setter = useGlobalOutletSetter();
-  React.useEffect(() => {
-    setter.append(id, ReactDOM.createPortal(children, container));
-    return () => {
-      setter.remove(id);
-    };
-  }, [id, children, container, setter]);
-
-  return null;
-}
-
-export { GlobalOutletProvider, GlobalOutlet, Portal, outletAction };
+export {
+  GlobalOutletProvider,
+  GlobalOutlet,
+  outletAction,
+  useGlobalOutletSetter,
+};
