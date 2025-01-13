@@ -14,7 +14,7 @@ import (
 
 var connectionOptions = map[string]string{
 	"cache":         "private",
-	"_foreign_keys": "yes",
+	"_pragma": "foreign_keys(1)",
 	"mode":          "rwc",
 }
 

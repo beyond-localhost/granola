@@ -170,6 +170,6 @@ func (r *SQLiteBowlRepository) DeleteById(id int) error {
 	if err != nil {
 		return fmt.Errorf("failed to delete bowl: %w", err)
 	}
-
+	
 	return nil
 }

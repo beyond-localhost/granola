@@ -8,5 +8,5 @@
 ## Upcoming Features
 
 [ ] (Backend, Frontend) Paginate the categories and todos.
-[ ] Modify, flakes, bowls.
-[ ] Delete, flakes, bowls.
+[ ] Modify, flakes
+[ ] Delete, flakes

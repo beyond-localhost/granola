@@ -19,13 +19,20 @@ type BowlState = {
   remove: (id: Id) => void;
 };
 
+let _bowlStore: BowlStore | null = null;
+
+const getBowlStore = () => {
+  assert(_bowlStore != undefined, "The bowl store should be initialized");
+  return _bowlStore;
+};
+
 function createBowlStore(initialData: Bowl[]) {
   const map = new Map<Id, Bowl>();
   for (let i = 0; i < initialData.length; i++) {
     const bowl = initialData[i];
     map.set(bowl.id, bowl);
   }
-  return createStore<BowlState>()((set) => {
+  const bowlStore = createStore<BowlState>()((set) => {
     return {
       map,
       add: (bowl: Bowl) =>
@@ -56,6 +63,8 @@ function createBowlStore(initialData: Bowl[]) {
         }),
     };
   });
+  _bowlStore = bowlStore;
+  return bowlStore;
 }
 
 type BowlStore = ReturnType<typeof createBowlStore>;
@@ -93,6 +102,12 @@ type FlakeState = {
   removeByBowlId: (bowlId: Id) => void;
 };
 
+let _flakeStore: FlakeStore | null = null;
+const getFlakeStore = () => {
+  assert(_flakeStore != null, "The flake store should be initialized");
+  return _flakeStore;
+};
+
 function createFlakeStore(initialData: Flake[]) {
   const map = new Map<Id, Flake>();
   for (let i = 0; i < initialData.length; i++) {
@@ -100,7 +115,7 @@ function createFlakeStore(initialData: Flake[]) {
     map.set(flake.id, flake);
   }
 
-  return createStore<FlakeState>()((set) => {
+  const flakeStore = createStore<FlakeState>()((set) => {
     return {
       map,
       add: (flake: Flake) =>
@@ -141,6 +156,8 @@ function createFlakeStore(initialData: Flake[]) {
         }),
     };
   });
+  _flakeStore = flakeStore;
+  return flakeStore;
 }
 type FlakeStore = ReturnType<typeof createFlakeStore>;
 const FlakeContext = React.createContext<undefined | FlakeStore>(undefined);
@@ -192,6 +209,13 @@ type TodoState = {
   removeByFlakeId: (flakeId: Id) => void;
 };
 
+let _todoStore: TodoStore | null = null;
+
+const getTodoStore = () => {
+  assert(_todoStore != null, "The todo store should be initialized");
+  return _todoStore;
+};
+
 function createTodoStore(initialData: Todo[]) {
   const map = new Map<DateKey, Todo[]>();
   for (let i = 0; i < initialData.length; i++) {
@@ -206,7 +230,7 @@ function createTodoStore(initialData: Todo[]) {
     todoList.sort((a, b) => a.id - b.id);
   }
 
-  return createStore<TodoState>()((set) => {
+  const todoStore = createStore<TodoState>()((set) => {
     return {
       map,
       add: (todo: Todo) =>
@@ -283,6 +307,8 @@ function createTodoStore(initialData: Todo[]) {
         }),
     };
   });
+  _todoStore = todoStore;
+  return todoStore;
 }
 
 type TodoStore = ReturnType<typeof createTodoStore>;
@@ -311,6 +337,19 @@ function TodoContextProvider(
   );
 }
 
+const removeFlakeById = (flakeId: Id) => {
+  const todoStore = getTodoStore().getState();
+  const flakeStore = getFlakeStore().getState();
+
+  assert(
+    flakeStore.map.get(flakeId) != null,
+    `The flake instance of id(${flakeId}) does not exist.`
+  );
+
+  todoStore.removeByFlakeId(flakeId);
+  flakeStore.remove(flakeId);
+};
+
 export {
   BowlContextProvider,
   useBowlContext,
@@ -324,60 +363,3 @@ export {
 };
 
 export type { DateKey };
-
-// type Store<T> = UseBoundStore<StoreApi<T>>;
-
-// const _removeBowlById =
-//   (_todoStore: Store<TodoStore>) =>
-//   (_flakeStore: Store<FlakeStore>) =>
-//   (_bowlStore: Store<BowlStore>) =>
-//   (bowlId: Id) => {
-//     const flakeStore = _flakeStore();
-//     const todoStore = _todoStore();
-//     const bowlStore = _bowlStore();
-
-//     assert(
-//       bowlStore.map.get(bowlId) != null,
-//       `The bowl instance of id(${bowlId}) does not exist.`
-//     );
-
-//     const flakesByBowlId = Array.from(flakeStore.map.entries()).filter(
-//       ([_, value]) => value.bowlId === bowlId
-//     );
-
-//     for (const [flakeId] of flakesByBowlId) {
-//       todoStore.removeByFlakeId(flakeId);
-//     }
-
-//     flakeStore.removeByBowlId(bowlId);
-//     bowlStore.remove(bowlId);
-//   };
-
-// const removeBowlById =
-//   _removeBowlById(useTodoStore)(useFlakeStore)(useBowlStore);
-
-// const _removeFlakeById =
-//   (_todoStore: Store<TodoStore>) =>
-//   (_flakeStore: Store<FlakeStore>) =>
-//   (flakeId: Id) => {
-//     const todoStore = _todoStore();
-//     const flakeStore = _flakeStore();
-
-//     assert(
-//       flakeStore.map.get(flakeId) != null,
-//       `The flake instance of id(${flakeId}) does not exist.`
-//     );
-
-//     // 먼저 하위의 todos를 삭제
-//     todoStore.removeByFlakeId(flakeId);
-
-//     // 그 다음 flake 삭제
-//     flakeStore.remove(flakeId);
-//   };
-// const removeFlakeById = _removeFlakeById(useTodoStore)(useFlakeStore);
-// useBowlStore,
-// useFlakeStore,
-// useTodoStore,
-// removeBowlById,
-// removeFlakeById,
-//  {};
