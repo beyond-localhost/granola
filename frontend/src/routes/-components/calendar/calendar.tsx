@@ -1,4 +1,5 @@
 import * as React from "react";
+
 import {
   useCalendarGridContext,
   useCurrentDateContext,
@@ -9,10 +10,24 @@ import { cn } from "#/lib/utils";
 import { toDateKey, useFlakeContext, useTodoContext } from "#/lib/state";
 import { assert } from "#/lib/assert";
 import { todos } from "@/go/models";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import * as todosService from "@/go/todos/TodosService";
+import {
+  ChevronLeft,
+  ChevronRight,
+  Trash2,
+  CircleCheck,
+  Undo2,
+} from "lucide-react";
 import { useGlobalOutletSetter } from "#/components/portal";
 import { CREATE_TODO_ID, CreateTodo } from "../create-todo/create-todo";
 import { debounce } from "#/lib/debounce";
+
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuTrigger,
+} from "#/components/ui/context-menu";
 
 function CalendarHeader() {
   const { next, prev, currentDate, now } = useCurrentDateContext();
@@ -209,10 +224,39 @@ function TodoItem({ todo }: { todo: todos.Todo }) {
     return flake;
   });
 
+  const setDone = useTodoContext((state) => state.setDone);
+  const removeTodo = useTodoContext((state) => state.remove);
+
+  const onDeleteSelect = async () => {
+    await todosService.Remove(todo.id);
+    removeTodo(todo);
+  };
+
+  const onDoneSelect = async () => {
+    await todosService.SetDone(todo.id);
+    setDone(todo);
+  };
+  const doneIcon = todo.done ? <Undo2 /> : <CircleCheck />;
+  const doneDisplayMessage = todo.done ? "되돌리기" : "완료하기";
+
   return (
-    <div className="px-1 w-full">
-      <p className="text-sm truncate">{flake.name}</p>
-    </div>
+    <ContextMenu>
+      <ContextMenuTrigger>
+        <div className="px-1 w-full">
+          <p className="text-sm truncate">{flake.name}</p>
+        </div>
+      </ContextMenuTrigger>
+      <ContextMenuContent>
+        <ContextMenuItem onSelect={onDeleteSelect}>
+          <Trash2 />
+          <span className="ml-2">삭제</span>
+        </ContextMenuItem>
+        <ContextMenuItem onSelect={onDoneSelect}>
+          {doneIcon}
+          <span className="ml-2">{doneDisplayMessage}</span>
+        </ContextMenuItem>
+      </ContextMenuContent>
+    </ContextMenu>
   );
 }
 

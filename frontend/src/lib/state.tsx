@@ -187,7 +187,7 @@ type Todo = model.todos.Todo;
 type TodoState = {
   map: Map<DateKey, Todo[]>;
   add: (todo: Todo) => void;
-  setDone: (todo: Todo, next: boolean) => void;
+  setDone: (todo: Todo) => void;
   remove: (todo: Todo) => void;
   removeByFlakeId: (flakeId: Id) => void;
 };
@@ -224,10 +224,11 @@ function createTodoStore(initialData: Todo[]) {
             map: newMap,
           };
         }),
-      setDone: (todo: Todo, next: boolean) =>
+      setDone: (todo: Todo) =>
         set((state) => {
           const newMap = new Map(state.map);
-          const todoList = newMap.get(toDateKey(todo.scheduledAt));
+          const key = toDateKey(todo.scheduledAt);
+          const todoList = newMap.get(key);
           assert(
             Array.isArray(todoList),
             `There is no existing todoList when updating the todo: ${JSON.stringify(todo, null, 4)}`
@@ -240,9 +241,10 @@ function createTodoStore(initialData: Todo[]) {
           const newTodo = new model.todos.Todo();
           newTodo.id = todo.id;
           newTodo.flakeId = todo.flakeId;
-          newTodo.done = next;
+          newTodo.done = !todo.done;
           newTodo.scheduledAt = todo.scheduledAt;
           todoList[targetIndex] = newTodo;
+          newMap.set(key, todoList.slice());
           return {
             map: newMap,
           };
@@ -294,7 +296,7 @@ function useTodoContext<T>(
     throw new Error("useBowlContext should be called within FlakeProvider");
   }
 
-  return useStoreWithEqualityFn(store, useShallow(selector), equalityFn);
+  return useStoreWithEqualityFn(store, selector, equalityFn);
 }
 
 function TodoContextProvider(

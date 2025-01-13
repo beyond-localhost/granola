@@ -175,14 +175,13 @@ func (r * SQLiteTodoRepository) SetDone(id int64) (bool, error) {
 		}
 		
 		nextDone := !todo.Done
-
 		ret, err := tx.Exec("update todos set done = ? where id = ?", nextDone, id)
 		if err != nil {
 			return false, err
 		}
 		
 		affected, err := ret.RowsAffected()
-		
+	
 		if err != nil {
 			return false, fmt.Errorf("unsupported rowsAffected")
 		}
@@ -190,6 +189,7 @@ func (r * SQLiteTodoRepository) SetDone(id int64) (bool, error) {
 		if affected != 1 {
 			return false, fmt.Errorf("expected affected row is 1 but found %d", affected)
 		}
+
 		
 		return nextDone, nil
 	})

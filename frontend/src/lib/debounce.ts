@@ -2,7 +2,7 @@ function debounce<TFunc extends (...args: any[]) => any>(
   func: TFunc,
   delayMS: number
 ) {
-  let timeout: NodeJS.Timeout | null = null;
+  let timeout: ReturnType<typeof globalThis.setTimeout> | null = null;
 
   function debounced(
     this: ThisParameterType<TFunc>,
