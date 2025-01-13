@@ -58,10 +58,6 @@ function CreateTodo({ onClose, initialDate }: CreateTodoProps) {
         await todosService.Create(flake?.id, iso)
       );
       LogDebug(`<FRONTEND> new todo is : ${JSON.stringify(newTodo, null, 4)}`);
-      /**
-       * DEGUG
-       * IN HERE, exception occured
-       */
       addTodo(newTodo);
       setOpen(false);
     } catch (e) {

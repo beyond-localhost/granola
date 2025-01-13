@@ -13,19 +13,25 @@ import {
 } from "#/lib/state";
 
 import { GlobalOutletProvider, GlobalOutlet } from "#/components/portal";
+import { NavigationCommand } from "./-components/navigation-command/navigation-command";
 
 export const Route = createRootRoute({
-  component: () => (
+  component: Root,
+});
+
+function Root() {
+  return (
     <GlobalOutletProvider>
       <BowlContextProvider initialData={initialBowlsPromise}>
         <FlakeContextProvider initialFlakes={initialFlakesPromise}>
           <TodoContextProvider initialData={initialTodosPromise}>
             <Outlet />
             <GlobalOutlet />
+            <NavigationCommand />
             <TanStackRouterDevtools />
           </TodoContextProvider>
         </FlakeContextProvider>
       </BowlContextProvider>
     </GlobalOutletProvider>
-  ),
-});
+  );
+}

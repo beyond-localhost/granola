@@ -91,7 +91,7 @@ function FlakeList() {
   return (
     <div>
       <h2 className="text-2xl font-bold">재밌는 일 목록</h2>
-      <div className="mt-4">
+      <div className="mt-4 h-[220px] max-h-[220px] overflow-y-auto">
         <Table className="overflow-y-auto border-zinc-200">
           <TableHeader>
             {t.getHeaderGroups().map((headerGroup) => {
@@ -174,24 +174,24 @@ function FlakeList() {
             )}
           </TableBody>
         </Table>
-        <div className="flex justify-between items-center">
-          <CreateFlakeCTA bowls={Array.from(bowls.values())} />
-          <div className="flex gap-1 mt-2">
-            <Button
-              onClick={() => t.previousPage()}
-              size="sm"
-              disabled={!t.getCanPreviousPage()}
-            >
-              이전
-            </Button>
-            <Button
-              onClick={() => t.nextPage()}
-              size="sm"
-              disabled={!t.getCanNextPage()}
-            >
-              다음
-            </Button>
-          </div>
+      </div>
+      <div className="flex justify-between items-center mt-4">
+        <CreateFlakeCTA bowls={Array.from(bowls.values())} />
+        <div className="flex gap-1 mt-2">
+          <Button
+            onClick={() => t.previousPage()}
+            size="sm"
+            disabled={!t.getCanPreviousPage()}
+          >
+            이전
+          </Button>
+          <Button
+            onClick={() => t.nextPage()}
+            size="sm"
+            disabled={!t.getCanNextPage()}
+          >
+            다음
+          </Button>
         </div>
       </div>
     </div>

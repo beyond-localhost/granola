@@ -174,7 +174,7 @@ function BowlList() {
           </TableBody>
         </Table>
       </div>
-      <div className="flex justify-between items-center mt-6">
+      <div className="flex justify-between items-center mt-4">
         <CreateBowlCTA />
         <div className="flex gap-1">
           <Button
