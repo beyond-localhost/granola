@@ -13,5 +13,5 @@
 
 ## bug fix
 
-[ ] (Frontend) enable search when creating a todo.
+[x] (Frontend) enable search when creating a todo.
 [x] (Frontend) Cell overflow.

@@ -204,16 +204,8 @@ function SelectBowl({
               return (
                 <CommandItem
                   key={bowl.id}
-                  value={String(bowl.id)}
-                  onSelect={(id) => {
-                    const targetBowl = bowls.find(
-                      (bowl) => bowl.id === Number(id)
-                    );
-                    assert(
-                      targetBowl != undefined,
-                      `There is no bowl of id ${id} in the Command.`
-                    );
-                    setBowl(targetBowl);
+                  onSelect={() => {
+                    setBowl(bowl);
                     setOpen(false);
                   }}
                 >
@@ -270,16 +262,8 @@ function SelectFlake({
               return (
                 <CommandItem
                   key={flake.id}
-                  value={String(flake.id)}
-                  onSelect={(id) => {
-                    const targetFlake = flakes.find(
-                      (flake) => flake.id === Number(id)
-                    );
-                    assert(
-                      targetFlake != undefined,
-                      `There is no flake of id ${id} in the Command.`
-                    );
-                    setFlake(targetFlake);
+                  onSelect={() => {
+                    setFlake(flake);
                     setOpen(false);
                   }}
                 >
