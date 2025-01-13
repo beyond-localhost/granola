@@ -23,7 +23,7 @@ export const Route = createRootRoute({
       <BowlContextProvider initialData={initialBowlsPromise}>
         <FlakeContextProvider initialFlakes={initialFlakesPromise}>
           <TodoContextProvider initialData={initialTodosPromise}>
-            <SidebarProvider>
+            <SidebarProvider defaultOpen={false}>
               <AppSidebar />
               <main className="w-full">
                 <Outlet />
