@@ -13,23 +13,27 @@ import {
   FlakeContextProvider,
   TodoContextProvider,
 } from "#/lib/state";
+
 import { SidebarProvider } from "#/components/ui/sidebar";
+import { GlobalOutletProvider, GlobalOutlet } from "#/components/portal";
 
 export const Route = createRootRoute({
   component: () => (
-    <BowlContextProvider initialData={initialBowlsPromise}>
-      <FlakeContextProvider initialFlakes={initialFlakesPromise}>
-        <TodoContextProvider initialData={initialTodosPromise}>
-          <SidebarProvider>
-            <AppSidebar />
-            <main className="w-full">
-              <Outlet />
-            </main>
-          </SidebarProvider>
-
-          <TanStackRouterDevtools />
-        </TodoContextProvider>
-      </FlakeContextProvider>
-    </BowlContextProvider>
+    <GlobalOutletProvider>
+      <BowlContextProvider initialData={initialBowlsPromise}>
+        <FlakeContextProvider initialFlakes={initialFlakesPromise}>
+          <TodoContextProvider initialData={initialTodosPromise}>
+            <SidebarProvider defaultOpen={false}>
+              <AppSidebar />
+              <main className="w-full">
+                <Outlet />
+              </main>
+              <GlobalOutlet />
+            </SidebarProvider>
+            <TanStackRouterDevtools />
+          </TodoContextProvider>
+        </FlakeContextProvider>
+      </BowlContextProvider>
+    </GlobalOutletProvider>
   ),
 });

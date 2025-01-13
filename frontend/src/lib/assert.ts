@@ -1,4 +1,4 @@
-import { LogError } from "@/runtime";
+import { LogDebug } from "@/runtime";
 
 export function assert(
   expectedCondition: any,
@@ -6,7 +6,7 @@ export function assert(
 ): asserts expectedCondition {
   if (!expectedCondition) {
     console.error(message);
-    LogError(message);
-    throw Error(message);
+    LogDebug(`<Frontend> An error occured: ${message}`);
+    throw new Error(message);
   }
 }

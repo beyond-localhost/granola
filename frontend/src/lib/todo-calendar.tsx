@@ -6,6 +6,7 @@ const CurrentDateContext = React.createContext<
       currentDate: Date;
       prev: () => void;
       next: () => void;
+      now: () => void;
     }
   | undefined
 >(undefined);
@@ -27,8 +28,8 @@ type CalendarCell = {
   day: number;
 
   monthStatus: "prev" | "next" | "current";
-
   key: DateKey;
+  rawDate: Date;
 };
 
 type CalenderWeekSnapshot = Array<CalendarCell>;
@@ -99,12 +100,13 @@ function CalendarProvider({ initialDate, children }: Props) {
 
         const key = toDateKey(snapshot);
         week.push({
-          year: cur.getFullYear(),
-          month: cur.getMonth() + 1,
-          date: cur.getDate(),
-          day: cur.getDay(),
+          year: snapshot.getFullYear(),
+          month: snapshot.getMonth() + 1,
+          date: snapshot.getDate(),
+          day: snapshot.getDay(),
           monthStatus: status,
           key,
+          rawDate: snapshot,
         });
         cur.setDate(cur.getDate() + 1);
       }
@@ -131,8 +133,18 @@ function CalendarProvider({ initialDate, children }: Props) {
     });
   }, []);
 
+  const onToday = React.useCallback(() => {
+    setCurrentDate((prev) => {
+      const today = new Date();
+      if (toDateKey(today) == toDateKey(prev)) {
+        return prev;
+      }
+      return today;
+    });
+  }, []);
+
   const currentDateContextValue = React.useMemo(() => {
-    return { currentDate, prev: onPrev, next: onNext };
+    return { currentDate, prev: onPrev, next: onNext, now: onToday };
   }, [currentDate, onPrev, onNext]);
 
   return (
@@ -145,4 +157,5 @@ function CalendarProvider({ initialDate, children }: Props) {
 }
 
 export { CalendarProvider, useCalendarGridContext, useCurrentDateContext };
+
 export type { CalendarCell };

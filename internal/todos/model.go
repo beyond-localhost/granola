@@ -50,9 +50,9 @@ func (r *SQLiteTodoRepository) Create(flakeId int64, scheduledAt time.Time) (*To
 
 	return transaction.Tx(r.db, func(tx *sql.Tx) (*TodoWithFlakeName, error) {
 		zero := TodoWithFlakeName{}
-		result, err := tx.Exec("insert into todos (flake_id scheduled_at) values (?, ?)", flakeId, scheduledAt)
+		result, err := tx.Exec("insert into todos (flake_id, scheduled_at) values (?, ?)", flakeId, scheduledAt)
 		if err != nil {
-			return &zero, err
+			return &zero, fmt.Errorf("excception on the insert statement: %v", err)
 		}
 		id, err := result.LastInsertId()
 		if err != nil {
@@ -68,15 +68,12 @@ func (r *SQLiteTodoRepository) Create(flakeId int64, scheduledAt time.Time) (*To
 
 
 		if err = row.Scan(&zero.Id, &zero.FlakeId, &zero.Done, &zero.ScheduledAt, &zero.FlakeName); err != nil {
-			return &zero, err
+			return &zero, fmt.Errorf("exception on the select statement: %v", err)
 		}
 
 		return &zero, nil
 		
 	})
-	
-	
-	
 }
 
 func getByIdTx(tx *sql.Tx, id int64) (*Todo, error) {

@@ -69,7 +69,7 @@ function useBowlContext<T>(
   if (store == null) {
     throw new Error("useBowlContext should be called within BowlProvider");
   }
-  return useStoreWithEqualityFn(store, selector, equalityFn);
+  return useStoreWithEqualityFn(store, useShallow(selector), equalityFn);
 }
 
 function BowlContextProvider(
