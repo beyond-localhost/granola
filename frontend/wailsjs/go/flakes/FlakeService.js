@@ -6,8 +6,8 @@ export function Create(arg1, arg2, arg3) {
   return window['go']['flakes']['FlakeService']['Create'](arg1, arg2, arg3);
 }
 
-export function DeleteById(arg1, arg2) {
-  return window['go']['flakes']['FlakeService']['DeleteById'](arg1, arg2);
+export function DeleteById(arg1) {
+  return window['go']['flakes']['FlakeService']['DeleteById'](arg1);
 }
 
 export function GetAll() {

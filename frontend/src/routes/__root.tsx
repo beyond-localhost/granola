@@ -20,9 +20,7 @@ export const Route = createRootRoute({
       <BowlContextProvider initialData={initialBowlsPromise}>
         <FlakeContextProvider initialFlakes={initialFlakesPromise}>
           <TodoContextProvider initialData={initialTodosPromise}>
-            <main className="w-full">
-              <Outlet />
-            </main>
+            <Outlet />
             <GlobalOutlet />
             <TanStackRouterDevtools />
           </TodoContextProvider>

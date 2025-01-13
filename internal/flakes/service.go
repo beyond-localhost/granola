@@ -28,7 +28,7 @@ func (s *FlakeService) UpdateById(id int64, update FlakeUpdate) (*Flake, error) 
 	return s.repo.UpdateById(id, update)
 }
 
-func (s *FlakeService) DeleteById(id int64, update FlakeUpdate) error {
+func (s *FlakeService) DeleteById(id int64) error {
 	return s.repo.DeleteById(id)
 }
 

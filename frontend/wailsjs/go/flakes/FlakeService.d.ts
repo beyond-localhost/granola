@@ -4,7 +4,7 @@ import {flakes} from '../models';
 
 export function Create(arg1:string,arg2:any,arg3:number):Promise<flakes.Flake>;
 
-export function DeleteById(arg1:number,arg2:flakes.FlakeUpdate):Promise<void>;
+export function DeleteById(arg1:number):Promise<void>;
 
 export function GetAll():Promise<Array<flakes.Flake>>;
 
