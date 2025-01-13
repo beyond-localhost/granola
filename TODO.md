@@ -8,8 +8,10 @@
 ## Upcoming Features
 
 [ ] (Backend, Frontend) Paginate the categories and todos.
+[ ] Modify(done) todos, flakes, bowls.
+[ ] Delete todos, flakes, bowls.
 
 ## bug fix
 
-[ ] (Frontend) enable search when creating a todo
-[ ] (Frontend) Cell overflow
+[ ] (Frontend) enable search when creating a todo.
+[x] (Frontend) Cell overflow.

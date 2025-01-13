@@ -11,8 +11,8 @@ import { assert } from "#/lib/assert";
 import { todos } from "@/go/models";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useGlobalOutletSetter } from "#/components/portal";
-import { CreateTodo } from "../create-todo/create-todo";
-import { LogDebug } from "@/runtime/runtime";
+import { CREATE_TODO_ID, CreateTodo } from "../create-todo/create-todo";
+import { debounce } from "#/lib/debounce";
 
 function CalendarHeader() {
   const { next, prev, currentDate, now } = useCurrentDateContext();
@@ -107,76 +107,59 @@ function CalendarCell({ cell }: { cell: CalendarCell }) {
   const todoList = useTodoContext((state) => {
     return state.map.get(cell.key) || [];
   });
-  // const [threshold, setThreshold] = React.useState(() => todoList.length);
 
   const currentDateKey = toDateKey(today);
   const sameDay = currentDateKey === cell.key;
   const setter = useGlobalOutletSetter();
 
+  const [renderThreshold, setRenderThreshold] = React.useState(todoList.length);
+
+  const calculateThreshold = React.useCallback(() => {
+    const itemArea = itemAreaRef.current;
+    const container = containerRef.current;
+
+    if (!itemArea || !container) return;
+
+    const offset = 24;
+
+    const containerVisibleHeight = container.clientHeight - offset;
+    const itemAreaFullHeight = itemArea.scrollHeight;
+
+    const isOverflowing = itemAreaFullHeight > containerVisibleHeight;
+
+    if (!isOverflowing) {
+      setRenderThreshold(todoList.length);
+    } else {
+      setRenderThreshold(Math.min(2, todoList.length));
+    }
+  }, [todoList.length]);
+
+  React.useEffect(() => {
+    calculateThreshold();
+  }, [calculateThreshold]);
+
+  React.useEffect(() => {
+    const handleResize = debounce(calculateThreshold, 200);
+    window.addEventListener("resize", handleResize);
+    return () => {
+      handleResize.cancel();
+      window.removeEventListener("resize", handleResize);
+    };
+  }, [calculateThreshold]);
+
   function onDoubleClick() {
-    const id = "create-todo";
     setter.append(
-      id,
+      CREATE_TODO_ID,
       <CreateTodo
         initialDate={cell.rawDate}
-        onClose={() => setter.remove(id)}
+        onClose={() => setter.remove(CREATE_TODO_ID)}
       />
     );
   }
 
-  React.useLayoutEffect(() => {
-    const itemArea = itemAreaRef.current;
-    const container = containerRef.current;
-    if (itemArea == null || container == null) {
-      return;
-    }
-    // LogDebug(`-`.repeat(20));
-    LogDebug(
-      `
-      ${`-`.repeat(20)}
-      ItemArea's Scroll height: ${itemArea.scrollHeight}
-      ItemArea's Client height: ${itemArea.clientHeight}
-      Container's Scroll height: ${container.scrollHeight}
-      Container's Client height: ${container.clientHeight}
-      ${`-`.repeat(20)}
-      `.trim()
-    );
-
-    const offset = 24;
-    const containerVisibleHeight = container.clientHeight - offset;
-    const itemAreaFullHeight = itemArea.scrollHeight; // including overflown items
-
-    // if (containerVisibleHeight <= itemAreaFullHeight) {
-    //   const children = Array.from(itemArea.children);
-    //   let fullHeight = itemAreaFullHeight;
-    //   let lastIdx = children.length; // exclusive
-
-    //   if (children.length === 0) {
-    //     return;
-    //   }
-
-    //   while (containerVisibleHeight <= fullHeight || fullHeight > 0) {
-    //     const last = children[lastIdx - 1];
-    //     fullHeight -= last.clientHeight;
-    //     lastIdx--;
-    //   }
-
-    //   if (fullHeight > 0 && lastIdx > 0) {
-    //     setThreshold(lastIdx);
-    //   }
-    // }
-
-    // if (container.clei)
-
-    // LogDebug(`ItemAreas Scroll width: ${itemArea.scrollWidth}`);
-    // LogDebug(`ItemAreas Client height: ${itemArea.clientHeight}`);
-    // LogDebug(`-`.repeat(20));
-    // LogDebug(`ItemAreas Client width: ${itemArea.clientWidth}`);
-  }, []);
-
   return (
     <div
-      className="h-full cursor-pointer flex flex-col gap-px"
+      className="h-full cursor-pointer flex flex-col gap-px hover"
       onDoubleClick={onDoubleClick}
       ref={containerRef}
     >
@@ -201,14 +184,19 @@ function CalendarCell({ cell }: { cell: CalendarCell }) {
         </span>
         <span>일</span>
       </p>
-      <ul ref={itemAreaRef} className="overflow-clip grow">
-        {todoList.map((todo) => {
+      <ul ref={itemAreaRef} className="grow relative overflow-hidden">
+        {todoList.slice(0, renderThreshold).map((todo) => {
           return (
             <li key={todo.id} className="mt-[2px]">
               <TodoItem todo={todo} />
             </li>
           );
         })}
+        {renderThreshold < todoList.length && (
+          <li className="text-center text-sm text-blue-500 absolute bottom-0 left-0 w-full h-[24px] bg-white">
+            {todoList.length - renderThreshold}개 더 보기
+          </li>
+        )}
       </ul>
     </div>
   );
@@ -223,7 +211,7 @@ function TodoItem({ todo }: { todo: todos.Todo }) {
 
   return (
     <div className="px-1 w-full">
-      <p className="text-sm truncate">{flake.name.repeat(10)}</p>
+      <p className="text-sm truncate">{flake.name}</p>
     </div>
   );
 }
