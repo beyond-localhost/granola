@@ -10,14 +10,16 @@ type TodosService struct {
 }
 
 
+/**
+** TODO: synchronize the time between client and go
+**/
 func isoTimeToTime(iso string) (time.Time, error) {
 	t, err := time.Parse(time.RFC3339Nano, iso)
 	if err != nil {
 		zero := time.Time{}
 		return zero, err
 	}
-	year, month, date := t.Date()
-	return time.Date(year, month, date, 0, 0, 0, 0, t.Location()), nil
+	return t, nil	
 }
 
 
