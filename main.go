@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"embed"
 	"granola/db"
 	"granola/internal/bowls"
@@ -16,16 +17,18 @@ import (
 var assets embed.FS
 
 func main() {
-	db := db.New()
 
-	bowlsRepo := bowls.NewSQLiteBowlRepository(db)
+	conn := db.New()
+
+	bowlsRepo := bowls.NewSQLiteBowlRepository()
 	bowlsService := bowls.NewBowlsService(bowlsRepo)
-
-	flakesRepo := flakes.NewSQLiteFlakeRepository(db)
+	
+	flakesRepo := flakes.NewSQLiteFlakeRepository()
 	flakesService := flakes.NewFlakeService(flakesRepo)
 
-	todosRepo := todos.NewSQLiteTodoRepository(db)
+	todosRepo := todos.NewSQLiteTodoRepository()
 	todosService := todos.NewTodosService(todosRepo)
+
 
 	app := NewApp()
 
@@ -38,8 +41,13 @@ func main() {
 			Assets: assets,
 		},
 		BackgroundColour: &options.RGBA{R: 27, G: 38, B: 54, A: 1},
-		OnStartup:        app.startup,
-
+		OnStartup:        func(ctx context.Context) {
+			app.startup(ctx)
+			conn.Init()
+			bowlsRepo.SetDB(conn.DB)
+			flakesRepo.SetDB(conn.DB)
+			todosRepo.SetDB(conn.DB)
+		},
 		Bind: []interface{}{
 			app,
 			bowlsService,

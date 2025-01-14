@@ -29,6 +29,7 @@ func NewTodo(id int64, flakeId int64, done bool, scheduledAt time.Time) *Todo {
 }
 
 type TodoRepository interface {
+	SetDB(db *sql.DB)
 	Create(flakeId int64, scheduledAt time.Time) (*TodoWithFlakeName, error)
 	GetAll() ([]Todo, error)
 	GetAllByFlakeId(flakeId int64) ([]Todo, error)
@@ -42,8 +43,12 @@ type SQLiteTodoRepository struct {
 	db *sql.DB
 }
 
-func NewSQLiteTodoRepository(db *sql.DB) TodoRepository {
-	return &SQLiteTodoRepository{db}
+func NewSQLiteTodoRepository() TodoRepository {
+	return &SQLiteTodoRepository{}
+}
+
+func (r *SQLiteTodoRepository) SetDB(db *sql.DB) {
+	r.db = db
 }
 
 func (r *SQLiteTodoRepository) Create(flakeId int64, scheduledAt time.Time) (*TodoWithFlakeName, error) {

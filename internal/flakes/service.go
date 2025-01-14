@@ -8,6 +8,8 @@ func NewFlakeService(repo FlakeRepository) *FlakeService {
 	return &FlakeService{repo}
 }
 
+
+
 func (s *FlakeService) Create(name string, description *string, bowlId int64) (*Flake, error) {
 	return s.repo.Create(name, description, bowlId)
 }

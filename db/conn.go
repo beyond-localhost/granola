@@ -11,7 +11,9 @@ import (
 	_ "modernc.org/sqlite"
 )
 
-
+type Conn struct {
+	DB *sql.DB
+}
 
 var connectionOptions = map[string]string{
 	"cache":         "private",
@@ -30,9 +32,11 @@ func createConnectionString(path string, options map[string]string) string {
 	return connectionString + q.Encode()
 }
 
+func New() *Conn {
+	return &Conn{}
+}
 
-
-func New() *sql.DB {
+func (c *Conn) Init() {
 	/**
 	** Do we need really read env file?
 	**/
@@ -80,14 +84,14 @@ func New() *sql.DB {
 		log.Fatalf("Failed to ping database: %v", err)
 	}
 
+	c.DB = conn
 	
 
 	log.Printf("Successfully connected to database: %s", connString)
-
 	version := 0
-
+	
 	if !newDB {
-		v, err := CurrentVersion(conn)
+		v, err := CurrentVersion(c.DB)
 		if err != nil {
 			log.Fatalf("Failed to get current version: %v", err)
 		}
@@ -100,11 +104,12 @@ func New() *sql.DB {
 		log.Fatalf("Failed to load migrations: %v", err)
 	}
 
-	if err := applyMigrations(conn, migrations, version); err != nil {
+	if err := applyMigrations(c.DB, migrations, version); err != nil {
 		log.Fatalf("Failed to apply migrations: %v", err)
 	}
 
 	log.Println("Applied all migrations")
-	return conn
 }
+
+
 

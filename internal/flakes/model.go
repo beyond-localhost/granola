@@ -29,6 +29,7 @@ func NewFlake(id int64, name string, description *string, bowlId int64) *Flake {
 }
 
 type FlakeRepository interface {
+	SetDB(db *sql.DB)
 	Create(name string, description *string, bowlId int64) (*Flake, error)
 	GetAll() ([]Flake, error)
 	GetAllByBowlId(bowlId int64) ([]Flake, error)
@@ -41,8 +42,12 @@ type SQLiteFlakeRepository struct {
 	db *sql.DB
 }
 
-func NewSQLiteFlakeRepository (db *sql.DB) FlakeRepository {
-	return &SQLiteFlakeRepository{db}
+func NewSQLiteFlakeRepository () FlakeRepository {
+	return &SQLiteFlakeRepository{}
+}
+
+func (r *SQLiteFlakeRepository) SetDB(db *sql.DB) {
+	r.db = db
 }
 
 func (r *SQLiteFlakeRepository) Create(name string, description *string, bowlId int64) (*Flake, error) {
