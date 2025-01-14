@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/joho/godotenv"
 	_ "modernc.org/sqlite"
 )
 
@@ -29,24 +30,35 @@ func createConnectionString(path string, options map[string]string) string {
 	return connectionString + q.Encode()
 }
 
-// TODO: executable 디렉토리에 디비 추가
 
-
-func userHomeDir() string {
-	home, err := os.UserHomeDir()
-	if err != nil {
-		log.Fatalf("Failed to get user home directory: %v", err)
-	}
-	return home
-}
 
 func New() *sql.DB {
-	granolaDir := filepath.Join(userHomeDir(), "granola")
-	if err := os.MkdirAll(granolaDir, os.ModePerm); err != nil {
-		log.Fatalf("Failed to create granola directory: %v", err)
+	/**
+	** Do we need really read env file?
+	**/
+	err := godotenv.Load(".env")
+
+	if err != nil {
+			log.Fatal("Error loading .env file")
+	}
+	
+	var appDir string
+	appEnv := os.Getenv("APP_ENV")
+	if len(appEnv) == 0 {
+		log.Fatal("APP_ENV not set")
+	} else if appEnv == "production" {
+		appDir = appDataDirProd()
+	} else {
+		appDir = appDataDirDev()
 	}
 
-	dbPath := filepath.Join(granolaDir, "granola.db")
+	log.Printf("appdir is %s\n", appDir)
+	if err := os.MkdirAll(appDir, os.ModePerm); err != nil {
+		log.Fatalf("Failed to create granola directory: %v", err)
+	}
+	
+
+	dbPath := filepath.Join(appDir, "granola.db")
 	log.Printf("Using dbPath: %s\n", dbPath)
 
 	newDB := false

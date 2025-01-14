@@ -27,7 +27,7 @@ func main() {
 	todosRepo := todos.NewSQLiteTodoRepository(db)
 	todosService := todos.NewTodosService(todosRepo)
 
-	app := NewApp(bowlsService, flakesService, todosService)
+	app := NewApp()
 
 	// Create application with options
 	err := wails.Run(&options.App{
