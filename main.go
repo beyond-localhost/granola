@@ -21,6 +21,11 @@ var assets embed.FS
 func main() {
 
 	conn := db.New()
+	defer func() {
+		if conn.DB != nil {
+			conn.DB.Close()
+		}
+	}()
 
 	bowlsRepo := bowls.NewSQLiteBowlRepository()
 	bowlsService := bowls.NewBowlsService(bowlsRepo)
