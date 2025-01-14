@@ -24,6 +24,7 @@ func NewBowl(id int64, name string, description *string) *Bowl {
 }
 
 type BowlRepository interface {
+	SetDB(db *sql.DB)
 	Create(name string, description *string) (*Bowl, error)
 	GetAll() ([]Bowl, error)
 	GetById(id int) (*Bowl, error)
@@ -35,8 +36,12 @@ type SQLiteBowlRepository struct {
 	db *sql.DB
 }
 
-func NewSQLiteBowlRepository(db *sql.DB) BowlRepository {
-	return &SQLiteBowlRepository{db}
+func NewSQLiteBowlRepository() BowlRepository {
+	return &SQLiteBowlRepository{}
+}
+
+func (r *SQLiteBowlRepository) SetDB(db *sql.DB) {
+	r.db = db
 }
 
 

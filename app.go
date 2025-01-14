@@ -2,24 +2,16 @@ package main
 
 import (
 	"context"
-	"granola/internal/bowls"
-	"granola/internal/flakes"
-	"granola/internal/todos"
 )
 
 type App struct {
 	ctx context.Context
-	bowlsService *bowls.BowlsService
-	todosService *todos.TodosService
-	flakesService *flakes.FlakeService
+	
 }
 
 // NewApp creates a new App application struct
-func NewApp(bowlsService *bowls.BowlsService, flakeService *flakes.FlakeService, todosService *todos.TodosService) *App {
+func NewApp() *App {
 	return &App{
-		bowlsService: bowlsService,
-		flakesService: flakeService,
-		todosService: todosService,
 	}
 }
 

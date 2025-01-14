@@ -8,6 +8,7 @@ func NewBowlsService(repo BowlRepository) *BowlsService {
 	return &BowlsService{repo}
 }
 
+
 func (s *BowlsService) GetAll() ([]Bowl, error) {
 	return s.repo.GetAll()
 }

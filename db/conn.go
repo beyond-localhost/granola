@@ -10,7 +10,9 @@ import (
 	_ "modernc.org/sqlite"
 )
 
-
+type Conn struct {
+	DB *sql.DB
+}
 
 var connectionOptions = map[string]string{
 	"cache":         "private",
@@ -29,24 +31,27 @@ func createConnectionString(path string, options map[string]string) string {
 	return connectionString + q.Encode()
 }
 
-// TODO: executable 디렉토리에 디비 추가
-
-
-func userHomeDir() string {
-	home, err := os.UserHomeDir()
-	if err != nil {
-		log.Fatalf("Failed to get user home directory: %v", err)
-	}
-	return home
+func New() *Conn {
+	return &Conn{}
 }
 
-func New() *sql.DB {
-	granolaDir := filepath.Join(userHomeDir(), "granola")
-	if err := os.MkdirAll(granolaDir, os.ModePerm); err != nil {
+func (c *Conn) Init(buildType string) {
+	
+	var appDir string
+
+	if buildType == "production"  {
+		appDir = appDataDirProd()
+		} else{
+		appDir = appDataDirDev()
+	} 
+
+	log.Printf("appdir is %s\n", appDir)
+	if err := os.MkdirAll(appDir, os.ModePerm); err != nil {
 		log.Fatalf("Failed to create granola directory: %v", err)
 	}
+	
 
-	dbPath := filepath.Join(granolaDir, "granola.db")
+	dbPath := filepath.Join(appDir, "granola.db")
 	log.Printf("Using dbPath: %s\n", dbPath)
 
 	newDB := false
@@ -68,14 +73,14 @@ func New() *sql.DB {
 		log.Fatalf("Failed to ping database: %v", err)
 	}
 
+	c.DB = conn
 	
 
 	log.Printf("Successfully connected to database: %s", connString)
-
 	version := 0
-
+	
 	if !newDB {
-		v, err := CurrentVersion(conn)
+		v, err := CurrentVersion(c.DB)
 		if err != nil {
 			log.Fatalf("Failed to get current version: %v", err)
 		}
@@ -88,11 +93,12 @@ func New() *sql.DB {
 		log.Fatalf("Failed to load migrations: %v", err)
 	}
 
-	if err := applyMigrations(conn, migrations, version); err != nil {
+	if err := applyMigrations(c.DB, migrations, version); err != nil {
 		log.Fatalf("Failed to apply migrations: %v", err)
 	}
 
 	log.Println("Applied all migrations")
-	return conn
 }
+
+
 
