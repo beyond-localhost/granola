@@ -7,7 +7,6 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/joho/godotenv"
 	_ "modernc.org/sqlite"
 )
 
@@ -36,25 +35,15 @@ func New() *Conn {
 	return &Conn{}
 }
 
-func (c *Conn) Init() {
-	/**
-	** Do we need really read env file?
-	**/
-	err := godotenv.Load(".env")
-
-	if err != nil {
-			log.Fatal("Error loading .env file")
-	}
+func (c *Conn) Init(buildType string) {
 	
 	var appDir string
-	appEnv := os.Getenv("APP_ENV")
-	if len(appEnv) == 0 {
-		log.Fatal("APP_ENV not set")
-	} else if appEnv == "production" {
+
+	if buildType == "production"  {
 		appDir = appDataDirProd()
-	} else {
+		} else{
 		appDir = appDataDirDev()
-	}
+	} 
 
 	log.Printf("appdir is %s\n", appDir)
 	if err := os.MkdirAll(appDir, os.ModePerm); err != nil {
