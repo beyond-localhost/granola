@@ -4,7 +4,12 @@ The Todo management program made with [wails](https://wails.io/) and [react.js](
 
 ## DEMO
 
-todo
+The demo is linked on the youtube. You can click the thumbnail.
+<br />
+
+[![granola demo](https://img.youtube.com/vi/FCIcpmHW9Cg/0.jpg)](https://www.youtube.com/watch?v=FCIcpmHW9Cg)
+
+
 
 ## Quick start
 
