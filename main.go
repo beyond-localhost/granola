@@ -44,11 +44,23 @@ func main() {
 		},
 		BackgroundColour: &options.RGBA{R: 27, G: 38, B: 54, A: 1},
 		OnStartup:        func(ctx context.Context) {
-			info := runtime.Environment(ctx)
-			// info.BuildType
-			log.Printf("Running on: %v\n", info)
 			app.startup(ctx)
-			conn.Init(info.BuildType)
+			info := runtime.Environment(ctx)
+		
+			err := conn.SetAppDirPathByBuildType(info.BuildType)
+			if err != nil {
+				log.Fatalf("error on setting app dir path: %v", err)
+			}
+
+			conn.SetDBName("granola.db")
+			err = conn.Open()
+			if err != nil {
+				log.Fatalf("error on opening db: %v", err)
+			}
+
+			if err = conn.Migrate(); err != nil {
+				log.Fatalf("error on migrating db: %v", err)
+			}
 			bowlsRepo.SetDB(conn.DB)
 			flakesRepo.SetDB(conn.DB)
 			todosRepo.SetDB(conn.DB)
