@@ -1,21 +1,29 @@
 # Granola
 
-The hobby project made with [wails](https://wails.io/)
+The Todo management program made with [wails](https://wails.io/) and [react.js](https://react.dev)
 
-## About
+## DEMO
 
-This is the official Wails React-TS template.
+todo
 
-You can configure the project by editing `wails.json`. More information about the project settings can be found
-here: https://wails.io/docs/reference/project-config
+## Quick start
 
-## Live Development
+### Granola
 
-To run in live development mode, run `wails dev` in the project directory. This will run a Vite development
-server that will provide very fast hot reload of your frontend changes. If you want to develop in a browser
-and have access to your Go methods, there is also a dev server that runs on http://localhost:34115. Connect
-to this in your browser, and you can call your Go code from devtools.
+For running on development, you need to install the [GO 1.18+](https://go.dev/doc/install) first.
 
-## Building
+```sh
+$ make dev
+```
 
-To build a redistributable, production mode package, use `wails build`.
+<br />
+
+For building this project:
+
+```sh
+$ make build
+```
+
+<br />
+
+Wails have many options to build upon different [platform](https://wails.io/docs/reference/cli#platforms). I manage the script in the MakeFile, so it is recommend to modify it and build depending on your machine. Currently, I tested only darwin/arm64. If you have a problem during opening the artifact, I recommend to run it on the development.
