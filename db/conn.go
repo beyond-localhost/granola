@@ -46,8 +46,8 @@ func ResolveAppDir(buildType string) string {
 
 type Conn struct {
 	DB *sql.DB
-	appDirPath string
-	dbName string
+	AppDirPath string
+	DBName string
 }
 
 func New() *Conn {
@@ -55,7 +55,7 @@ func New() *Conn {
 }
 
 func (c *Conn) SetAppDirPath(appDirPath string) {
-	c.appDirPath = appDirPath
+	c.AppDirPath = appDirPath
 }
 
 func (c *Conn) SetAppDirPathByBuildType(buildType string) (error) {
@@ -70,25 +70,26 @@ func (c *Conn) SetAppDirPathByBuildType(buildType string) (error) {
 		return fmt.Errorf("buildType should be one of the production, dev, test but got %v", buildType)
 	}
 	
-	c.appDirPath = ret
+	c.AppDirPath = ret
 	return nil
 }
 
 func (c *Conn) SetDBName(dbName string) {
-	c.dbName = dbName
+	c.DBName = dbName
 }
 
 func (c *Conn) Open() error {
-	if c.appDirPath == "" {
+	if len(c.AppDirPath) == 0 {
 		return fmt.Errorf("appDirPath is not set. Call either c.SetAppDirPath or c.SetAppDirPathByBuildType")
 	}
+	// TODO
+	// We Don't check the c.DBName here, because the test db will not have the filename.
 
-	if c.dbName == "" {
-		return fmt.Errorf("dbName is not set. Call the c.SetDBName")
-	}
+	dbPath := filepath.Join(c.AppDirPath, c.DBName)
+	log.Printf("Opening sqlite3 with dbPath %s\n", dbPath)
 
-	dbPath := filepath.Join(c.appDirPath, c.dbName)
 	connString := createConnectionString(dbPath, connectionOptions)
+	log.Printf("Opening sqlite3 with connection %s\n", connString)
 	
 	conn, err := sql.Open("sqlite", connString)
 	
@@ -105,15 +106,17 @@ func (c *Conn) Open() error {
 	return nil
 }
 
+
 func (c *Conn) HasFile() (bool, error) {
-	if c.appDirPath == "" {
+	if len(c.AppDirPath) == 0 {
 		return false, fmt.Errorf("appDirPath is not set. Call either c.SetAppDirPath or c.SetAppDirPathByBuildType")
 	}
-	if c.dbName == "" {
-		return false, fmt.Errorf("dbName is not set. Call the c.SetDBName")
-	}
 
-	dbPath := filepath.Join(c.appDirPath, c.dbName)
+	// TODO
+	// We Don't check the c.DBName here, because the test db will not have the filename.
+	
+	
+	dbPath := filepath.Join(c.AppDirPath, c.DBName)
 
 
 	_, err := os.Stat(dbPath)

@@ -29,7 +29,7 @@ func appDataDirTest() string {
 	if err != nil {
 		panic(err)
 	}
-	return filepath.Join(wd, "test_db")	
+	return filepath.Join(wd, "db")	
 }
 
 
