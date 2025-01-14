@@ -70,18 +70,6 @@ function CalendarProvider({ initialDate, children }: Props) {
     return start;
   }, [currentDate]);
 
-  const gridEnd = React.useMemo(() => {
-    const last = new Date(
-      currentDate.getFullYear(),
-      currentDate.getMonth() + 1,
-      0
-    );
-    const end = new Date(last);
-    end.setDate(end.getDate() + (6 - last.getDay()));
-
-    return end;
-  }, [currentDate]);
-
   const grid = React.useMemo<CalenderWeekSnapshot[]>(() => {
     const ret: Array<CalenderWeekSnapshot> = [];
     const cur = new Date(gridStart);

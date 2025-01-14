@@ -16,6 +16,7 @@ function debounce<TFunc extends (...args: any[]) => any>(
       timeout = null;
     }, delayMS);
   }
+
   debounced.cancel = () => {
     if (timeout) {
       clearTimeout(timeout);

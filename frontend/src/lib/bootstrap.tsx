@@ -1,5 +1,4 @@
 import { Deferred } from "./deferred";
-import { LogDebug } from "@/runtime";
 import * as todosService from "@/go/todos/TodosService";
 import * as bowlsService from "@/go/bowls/BowlsService";
 import * as flakesService from "@/go/flakes/FlakeService";
@@ -24,9 +23,4 @@ bootStrapPromise.then(([bowls, flakes, todos]) => {
   initialTodos.resolve(todos.map(model.todos.Todo.createFrom));
 });
 
-export {
-  initialBowlsPromise,
-  initialFlakesPromise,
-  initialTodosPromise,
-  bootStrapPromise,
-};
+export { initialBowlsPromise, initialFlakesPromise, initialTodosPromise };

@@ -34,7 +34,6 @@ import {
   DropdownMenuLabel,
   DropdownMenuTrigger,
 } from "#/components/ui/dropdown-menu";
-import { LogDebug } from "@/runtime/runtime";
 
 type FlakeColumn = flakes.Flake & { bowlName: string };
 const flakeColumns: ColumnDef<FlakeColumn>[] = [
@@ -82,10 +81,6 @@ function FlakeList() {
     columns: flakeColumns,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
-  });
-
-  React.useEffect(() => {
-    LogDebug("FlakeList rendered");
   });
 
   return (

@@ -27,7 +27,6 @@ import { bowls, flakes, todos } from "@/go/models";
 import * as todosService from "@/go/todos/TodosService";
 import { assert } from "#/lib/assert";
 import { Calendar } from "#/components/ui/calendar";
-import { LogDebug } from "@/runtime/runtime";
 
 type CreateTodoProps = {
   onClose: () => void;
@@ -51,25 +50,12 @@ function CreateTodo({ onClose, initialDate }: CreateTodoProps) {
       date != undefined,
       `The date is undefined but createTodo is triggered`
     );
-    try {
-      const iso = date.toISOString();
-      LogDebug(`<FRONTEND> the iso string is ${iso}`);
-      const newTodo = todos.Todo.createFrom(
-        await todosService.Create(flake?.id, iso)
-      );
-      LogDebug(`<FRONTEND> new todo is : ${JSON.stringify(newTodo, null, 4)}`);
-      addTodo(newTodo);
-      setOpen(false);
-    } catch (e) {
-      if (typeof e === "string") {
-        LogDebug(`<FRONTEND> There is an exception. ${e}`);
-      } else if (e instanceof Error) {
-        LogDebug(`<FRONTEND> There is an exception. ${e.message}`);
-      } else {
-        LogDebug(`<FRONTEND> There is an exception. ${String(e)}`);
-      }
-      throw e;
-    }
+    const iso = date.toISOString();
+    const newTodo = todos.Todo.createFrom(
+      await todosService.Create(flake?.id, iso)
+    );
+    addTodo(newTodo);
+    setOpen(false);
   };
 
   React.useEffect(() => {
@@ -308,9 +294,6 @@ function SelectDate({
           mode="single"
           selected={currentDate}
           onSelect={(_, selectedDate) => {
-            LogDebug(
-              `<FRONTEND> Calendar selected: ${selectedDate.toString()}`
-            );
             setCurrentDate(selectedDate);
           }}
           required

@@ -34,7 +34,6 @@ import {
   DropdownMenuLabel,
   DropdownMenuTrigger,
 } from "#/components/ui/dropdown-menu";
-import { LogDebug } from "@/runtime/runtime";
 
 const bowlColumns: ColumnDef<bowls.Bowl>[] = [
   {
@@ -81,10 +80,6 @@ function BowlList() {
     columns: bowlColumns,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
-  });
-
-  React.useEffect(() => {
-    LogDebug("BowlList mounted");
   });
 
   return (
