@@ -6,8 +6,9 @@
   "scripts": {
     "generate-routes": "tsr generate",
     "dev": "vite",
-    "build": "tsc && vite build",
-    "preview": "vite preview"
+    "build": "npm run test && vite build",
+    "preview": "vite preview",
+    "test": "tsc"
   },
   "dependencies": {
     "@headlessui/react": "^2.2.0",

@@ -2,6 +2,7 @@ package db
 
 import (
 	"database/sql"
+	"fmt"
 	"log"
 	"net/url"
 	"os"
@@ -10,9 +11,7 @@ import (
 	_ "modernc.org/sqlite"
 )
 
-type Conn struct {
-	DB *sql.DB
-}
+
 
 var connectionOptions = map[string]string{
 	"cache":         "private",
@@ -31,74 +30,136 @@ func createConnectionString(path string, options map[string]string) string {
 	return connectionString + q.Encode()
 }
 
+func ResolveAppDir(buildType string) string {
+	switch buildType {
+	case "production":
+		return appDataDirProd()
+	case "dev":
+		return appDataDirDev()
+	case "test":
+		return appDataDirTest()
+	default:
+		log.Fatalf("Unknown build type: %s", buildType)
+		return ""
+	}
+}
+
+type Conn struct {
+	DB *sql.DB
+	AppDirPath string
+	DBName string
+}
+
 func New() *Conn {
 	return &Conn{}
 }
 
-func (c *Conn) Init(buildType string) {
-	
-	var appDir string
+func (c *Conn) SetAppDirPath(appDirPath string) {
+	c.AppDirPath = appDirPath
+}
 
-	if buildType == "production"  {
-		appDir = appDataDirProd()
-		} else{
-		appDir = appDataDirDev()
-	} 
+func (c *Conn) SetAppDirPathByBuildType(buildType string) (error) {
+	var ret string
+	switch buildType {
+		case "production": ret = appDataDirProd()
+		case "dev": ret = appDataDirDev()
+		case "test": ret = appDataDirTest()
+	}
 
-	log.Printf("appdir is %s\n", appDir)
-	if err := os.MkdirAll(appDir, os.ModePerm); err != nil {
-		log.Fatalf("Failed to create granola directory: %v", err)
+	if len(ret) == 0 {
+		return fmt.Errorf("buildType should be one of the production, dev, test but got %v", buildType)
 	}
 	
+	c.AppDirPath = ret
+	return nil
+}
 
-	dbPath := filepath.Join(appDir, "granola.db")
-	log.Printf("Using dbPath: %s\n", dbPath)
+func (c *Conn) SetDBName(dbName string) {
+	c.DBName = dbName
+}
 
-	newDB := false
-
-	if _, err := os.Stat(dbPath); os.IsNotExist(err) {
-		log.Printf("DB not exists: %s\n", err)
-		newDB = true
+func (c *Conn) Open() error {
+	if len(c.AppDirPath) == 0 {
+		return fmt.Errorf("appDirPath is not set. Call either c.SetAppDirPath or c.SetAppDirPathByBuildType")
 	}
+	// TODO
+	// We Don't check the c.DBName here, because the test db will not have the filename.
+
+	dbPath := filepath.Join(c.AppDirPath, c.DBName)
+	log.Printf("Opening sqlite3 with dbPath %s\n", dbPath)
 
 	connString := createConnectionString(dbPath, connectionOptions)
-	log.Printf("Using connection path: %s\n", connString)
+	log.Printf("Opening sqlite3 with connection %s\n", connString)
+	
 	conn, err := sql.Open("sqlite", connString)
+	
 	if err != nil {
-		log.Fatalf("Failed to open database: %v", err)
+		return fmt.Errorf("opening sqlite3 failed: %v", err)
 	}
 
 	// Verify the connection
 	if err := conn.Ping(); err != nil {
-		log.Fatalf("Failed to ping database: %v", err)
+		return fmt.Errorf("ping/pong sqlite failed: %v", err)
+	}
+	
+	c.DB = conn
+	return nil
+}
+
+
+func (c *Conn) HasFile() (bool, error) {
+	if len(c.AppDirPath) == 0 {
+		return false, fmt.Errorf("appDirPath is not set. Call either c.SetAppDirPath or c.SetAppDirPathByBuildType")
 	}
 
-	c.DB = conn
+	// TODO
+	// We Don't check the c.DBName here, because the test db will not have the filename.
 	
+	
+	dbPath := filepath.Join(c.AppDirPath, c.DBName)
 
-	log.Printf("Successfully connected to database: %s", connString)
+
+	_, err := os.Stat(dbPath)
+	if os.IsNotExist(err) {
+		return false, nil
+	} else if err != nil {
+		return false, fmt.Errorf("error while checking file: %v", err)
+	}
+
+	return true, nil
+}
+
+func (c *Conn) Migrate() (error) {
+	if c.DB == nil {
+		return fmt.Errorf("DB is not open. Call c.Open() before calling c.Migrate()")
+	}
+
+	hasFile, err := c.HasFile()
+
+	if err != nil {
+		return err
+	}
+
 	version := 0
 	
-	if !newDB {
+	if hasFile {
 		v, err := CurrentVersion(c.DB)
 		if err != nil {
-			log.Fatalf("Failed to get current version: %v", err)
+			return fmt.Errorf("failed to get current version: %v", err)
 		}
 		version = v
 	}
 
+
 	migrations, err := loadMigrations()
 
 	if err != nil {
-		log.Fatalf("Failed to load migrations: %v", err)
+		return fmt.Errorf("failed to load migrations: %v", err)
 	}
 
 	if err := applyMigrations(c.DB, migrations, version); err != nil {
-		log.Fatalf("Failed to apply migrations: %v", err)
+		return fmt.Errorf("failed to apply migrations: %v", err)
 	}
 
-	log.Println("Applied all migrations")
+	return nil
 }
-
-
-

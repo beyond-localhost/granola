@@ -5,3 +5,4 @@ frontend/dist
 granola.db
 
 build/bin # Compiled files
+test_db
