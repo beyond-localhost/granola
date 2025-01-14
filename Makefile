@@ -9,7 +9,7 @@ dev: deps
 	@wails dev
 
 build:
-	@wails build
+	@wails build -platform darwin/universal,windows/arm64
 
 test: build
 	go test $(CHECK_FILES) -race -count=1
