@@ -1,10 +1,6 @@
 import { createRootRoute, Outlet } from "@tanstack/react-router";
 
-import {
-  initialBowlsPromise,
-  initialFlakesPromise,
-  initialTodosPromise,
-} from "#/lib/bootstrap";
+import { bootStrapPromise } from "#/lib/bootstrap";
 import {
   BowlContextProvider,
   FlakeContextProvider,
@@ -15,15 +11,17 @@ import { GlobalOutletProvider, GlobalOutlet } from "#/components/portal";
 import { NavigationCommand } from "./-components/navigation-command/navigation-command";
 
 export const Route = createRootRoute({
+  loader: () => bootStrapPromise,
   component: Root,
 });
 
 function Root() {
+  const [initialBowls, initialFlakes, initialTodos] = Route.useLoaderData();
   return (
     <GlobalOutletProvider>
-      <BowlContextProvider initialData={initialBowlsPromise}>
-        <FlakeContextProvider initialFlakes={initialFlakesPromise}>
-          <TodoContextProvider initialData={initialTodosPromise}>
+      <BowlContextProvider initialData={initialBowls}>
+        <FlakeContextProvider initialData={initialFlakes}>
+          <TodoContextProvider initialData={initialTodos}>
             <Outlet />
             <GlobalOutlet />
             <NavigationCommand />

@@ -12,7 +12,7 @@ const CurrentDateContext = React.createContext<
 >(undefined);
 
 function useCurrentDateContext() {
-  const ctx = React.use(CurrentDateContext);
+  const ctx = React.useContext(CurrentDateContext);
   if (ctx == undefined) {
     throw new Error(
       "useCurrentDateContext should be called within CalendarProvider"
@@ -39,7 +39,7 @@ const CalendarGridContext = React.createContext<
 >(undefined);
 
 function useCalendarGridContext() {
-  const ctx = React.use(CalendarGridContext);
+  const ctx = React.useContext(CalendarGridContext);
   if (ctx == undefined) {
     throw new Error(
       "useCalendarGridContext should be called within CalendarProvider"

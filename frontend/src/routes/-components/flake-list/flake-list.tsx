@@ -203,7 +203,7 @@ function CreateFlakeCTA({ bowls }: CreateFlakeCTAProps) {
 
   const onSubmit: React.FormEventHandler<HTMLFormElement> = (event) => {
     event.preventDefault();
-    startTransition(async () => {
+    startTransition(() => {
       const formData = new FormData(event.currentTarget);
       const flakeName = formData.get("flakeName");
       const flakeDescription = formData.get("flakeDescription") || "";
@@ -226,13 +226,10 @@ function CreateFlakeCTA({ bowls }: CreateFlakeCTAProps) {
         `bowlDescription must be a string`
       );
 
-      const newFlake = await flakesService.Create(
-        flakeName,
-        flakeDescription,
-        bowlId
-      );
-      addFlake(newFlake);
-      setOpen(false);
+      flakesService
+        .Create(flakeName, flakeDescription, bowlId)
+        .then(addFlake)
+        .then(() => setOpen(false));
     });
   };
 
