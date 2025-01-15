@@ -41,7 +41,6 @@ function GlobalOutletProvider({ children }: { children: React.ReactNode }) {
       );
       nodeMap.set(id, node);
       setOutlet(
-        // Why do we map each ReactNode to the container?
         <React.Fragment>
           {Array.from(nodeMap.entries()).map(([key, node]) => {
             return <React.Fragment key={key}>{node}</React.Fragment>;
@@ -58,8 +57,11 @@ function GlobalOutletProvider({ children }: { children: React.ReactNode }) {
   const remove = React.useCallback((id: ReactNodeKey) => {
     nodeMap.delete(id);
     setOutlet(
-      // Why do we map each ReactNode to the container?
-      <React.Fragment>{Array.from(nodeMap.values())}</React.Fragment>
+      <React.Fragment>
+        {Array.from(nodeMap.entries()).map(([key, node]) => {
+          return <React.Fragment key={key}>{node}</React.Fragment>;
+        })}
+      </React.Fragment>
     );
   }, []);
 
