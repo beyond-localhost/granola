@@ -1,6 +1,6 @@
 # Granola
 
-The Todo management program made with [wails](https://wails.io/) and [react.js](https://react.dev)
+The Todo management program made with [wails](https://wails.io/) and [react.js](https://react.dev). For your information, check out [my retrospection(KR)](https://nemyung.tistory.com/26).
 
 ## DEMO
 
