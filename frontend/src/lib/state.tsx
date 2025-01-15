@@ -65,7 +65,7 @@ function useBowlContext<T>(
   selector: (state: BowlState) => T,
   equalityFn?: (left: T, right: T) => boolean
 ): T {
-  const store = React.use(BowlContext);
+  const store = React.useContext(BowlContext);
   if (store == null) {
     throw new Error("useBowlContext should be called within BowlProvider");
   }
@@ -73,12 +73,9 @@ function useBowlContext<T>(
 }
 
 function BowlContextProvider(
-  props: React.PropsWithChildren<{ initialData: Bowl[] | Promise<Bowl[]> }>
+  props: React.PropsWithChildren<{ initialData: Bowl[] }>
 ) {
-  const initialData = Array.isArray(props.initialData)
-    ? props.initialData
-    : React.use(props.initialData);
-  const store = React.useRef(createBowlStore(initialData)).current;
+  const store = React.useRef(createBowlStore(props.initialData)).current;
   return (
     <BowlContext.Provider value={store}>{props.children}</BowlContext.Provider>
   );
@@ -146,12 +143,9 @@ type FlakeStore = ReturnType<typeof createFlakeStore>;
 const FlakeContext = React.createContext<undefined | FlakeStore>(undefined);
 
 function FlakeContextProvider(
-  props: React.PropsWithChildren<{ initialFlakes: Flake[] | Promise<Flake[]> }>
+  props: React.PropsWithChildren<{ initialData: Flake[] }>
 ) {
-  const initialData = Array.isArray(props.initialFlakes)
-    ? props.initialFlakes
-    : React.use(props.initialFlakes);
-  const store = React.useRef(createFlakeStore(initialData)).current;
+  const store = React.useRef(createFlakeStore(props.initialData)).current;
   return (
     <FlakeContext.Provider value={store}>
       {props.children}
@@ -163,7 +157,7 @@ function useFlakeContext<T>(
   selector: (state: FlakeState) => T,
   equalityFn?: (left: T, right: T) => boolean
 ) {
-  const store = React.use(FlakeContext);
+  const store = React.useContext(FlakeContext);
   if (store == undefined) {
     throw new Error("useBowlContext should be called within FlakeProvider");
   }
@@ -291,7 +285,7 @@ function useTodoContext<T>(
   selector: (state: TodoState) => T,
   equalityFn?: (left: T, right: T) => boolean
 ) {
-  const store = React.use(TodoContext);
+  const store = React.useContext(TodoContext);
   if (store == undefined) {
     throw new Error("useBowlContext should be called within FlakeProvider");
   }
@@ -300,12 +294,9 @@ function useTodoContext<T>(
 }
 
 function TodoContextProvider(
-  props: React.PropsWithChildren<{ initialData: Todo[] | Promise<Todo[]> }>
+  props: React.PropsWithChildren<{ initialData: Todo[] }>
 ) {
-  const initialData = Array.isArray(props.initialData)
-    ? props.initialData
-    : React.use(props.initialData);
-  const store = React.useRef(createTodoStore(initialData)).current;
+  const store = React.useRef(createTodoStore(props.initialData)).current;
   return (
     <TodoContext.Provider value={store}>{props.children}</TodoContext.Provider>
   );

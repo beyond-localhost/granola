@@ -199,7 +199,7 @@ function CreateBowlCTA() {
 
   const onSubmit: React.FormEventHandler<HTMLFormElement> = (event) => {
     event.preventDefault();
-    startTransition(async () => {
+    startTransition(() => {
       const formData = new FormData(event.currentTarget);
       const bowlName = formData.get("bowlName");
       const bowlDescription = formData.get("bowlDescription") || "";
@@ -211,9 +211,10 @@ function CreateBowlCTA() {
         typeof bowlDescription === "string",
         `bowlDescription must be a string`
       );
-      const newBowl = await bowlsService.Create(bowlName, bowlDescription);
-      addBowl(newBowl);
-      setOpen(false);
+      bowlsService
+        .Create(bowlName, bowlDescription)
+        .then(addBowl)
+        .then(() => setOpen(false));
     });
   };
 

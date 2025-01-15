@@ -41,8 +41,11 @@ function GlobalOutletProvider({ children }: { children: React.ReactNode }) {
       );
       nodeMap.set(id, node);
       setOutlet(
-        // Why do we map each ReactNode to the container?
-        <React.Fragment>{Array.from(nodeMap.values())}</React.Fragment>
+        <React.Fragment>
+          {Array.from(nodeMap.entries()).map(([key, node]) => {
+            return <React.Fragment key={key}>{node}</React.Fragment>;
+          })}
+        </React.Fragment>
       );
     },
     []
@@ -54,8 +57,11 @@ function GlobalOutletProvider({ children }: { children: React.ReactNode }) {
   const remove = React.useCallback((id: ReactNodeKey) => {
     nodeMap.delete(id);
     setOutlet(
-      // Why do we map each ReactNode to the container?
-      <React.Fragment>{Array.from(nodeMap.values())}</React.Fragment>
+      <React.Fragment>
+        {Array.from(nodeMap.entries()).map(([key, node]) => {
+          return <React.Fragment key={key}>{node}</React.Fragment>;
+        })}
+      </React.Fragment>
     );
   }, []);
 
@@ -73,18 +79,20 @@ function GlobalOutletProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <OutletContext.Provider value={outlet}>
-      <OutletSetterContext value={setter}>{children}</OutletSetterContext>
+      <OutletSetterContext.Provider value={setter}>
+        {children}
+      </OutletSetterContext.Provider>
     </OutletContext.Provider>
   );
 }
 
 function GlobalOutlet() {
-  const outlet = React.use(OutletContext);
+  const outlet = React.useContext(OutletContext);
   return outlet;
 }
 
 function useGlobalOutletSetter() {
-  const ctx = React.use(OutletSetterContext);
+  const ctx = React.useContext(OutletSetterContext);
   if (ctx == null) {
     throw new Error(
       `useGlobalOutletSetter should be called within GlobalOutletProvider`
