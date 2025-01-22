@@ -7,12 +7,12 @@ import (
 	"strings"
 )
 
-type Flake struct {
-	Id          int64   `json:"id"`
-	Name        string  `json:"name"`
-	Description *string `json:"description"`
-	BowlId      int64   `json:"bowlId"`
-}
+// type Flake struct {
+// 	Id          int64   `json:"id"`
+// 	Name        string  `json:"name"`
+// 	Description *string `json:"description"`
+// 	BowlId      int64   `json:"bowlId"`
+// }
 
 type FlakeUpdate struct {
 	Name        *string `json:"name,omitempty"`

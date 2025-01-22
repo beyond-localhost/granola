@@ -7,12 +7,12 @@ import (
 	"strings"
 )
 
-type Bowl struct {
-	Id   int64  `json:"id"`
-	Name string `json:"name"`
-	// description can be null.
-	Description *string `json:"description"`
-}
+// type Bowl struct {
+// 	Id   int64  `json:"id"`
+// 	Name string `json:"name"`
+// 	// description can be null.
+// 	Description *string `json:"description"`
+// }
 
 type BowlUpdate struct {
 	Name        *string `json:"name,omitempty"`
