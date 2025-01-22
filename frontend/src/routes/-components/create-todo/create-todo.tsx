@@ -26,7 +26,7 @@ function CreateTodo({ onClose, initialDate }: CreateTodoProps) {
   const [flake, setFlake] = React.useState<flakes.Flake>()
   const [date, setDate] = React.useState<Date>(() => initialDate ?? new Date())
 
-  const addTodo = useTodoContext((state) => state.add)
+  const addTodo = useTodoContext((state) => state.upsert)
 
   const createTodo = async () => {
     assert(flake !== undefined, `The flake is undefined but createTodo is triggered`)

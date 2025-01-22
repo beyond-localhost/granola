@@ -225,7 +225,7 @@ function TodoItem({ todo }: { todo: todos.Todo }) {
     return target
   })
 
-  const setDone = useTodoContext((state) => state.setDone)
+  const setDone = useTodoContext((state) => state.upsert)
   const removeTodo = useTodoContext((state) => state.remove)
 
   const onDeleteSelect = async () => {
@@ -235,7 +235,7 @@ function TodoItem({ todo }: { todo: todos.Todo }) {
 
   const onDoneSelect = async () => {
     await todosService.SetDone(todo.id)
-    setDone(todo)
+    setDone({ ...todo, done: !todo.done })
   }
   const doneIcon = todo.done ? <Undo2 /> : <CircleCheck />
   const doneDisplayMessage = todo.done ? "되돌리기" : "완료하기"

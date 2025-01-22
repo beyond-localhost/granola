@@ -203,7 +203,7 @@ function CreateFlakeCTA({ bowls }: CreateFlakeCTAProps) {
   const [open, setOpen] = React.useState(false)
   const [pending, startTransition] = React.useTransition()
   const [errorMap, setErrorMap] = React.useState(defaultErrorMap)
-  const addFlake = useFlakeContext((state) => state.add)
+  const addFlake = useFlakeContext((state) => state.upsert)
 
   const onSubmit: React.FormEventHandler<HTMLFormElement> = (event) => {
     event.preventDefault()

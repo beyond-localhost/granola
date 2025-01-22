@@ -202,7 +202,7 @@ function CreateBowlCTA() {
   const [open, setOpen] = React.useState(false)
   const [pending, startTransition] = React.useTransition()
   const [errorMap, setErrorMap] = React.useState(defaultErrorMap)
-  const addBowl = useBowlContext((state) => state.add)
+  const addBowl = useBowlContext((state) => state.upsert)
 
   const onOpenChange = (nextOpen: boolean) => {
     setErrorMap(defaultErrorMap)
