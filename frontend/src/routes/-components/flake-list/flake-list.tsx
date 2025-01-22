@@ -248,8 +248,13 @@ function CreateFlakeCTA({ bowls }: CreateFlakeCTAProps) {
     })
   }
 
+  const onOpenChange = (next: boolean) => {
+    setOpen(next)
+    setErrorMap(defaultErrorMap)
+  }
+
   return (
-    <Popover onOpenChange={setOpen} open={open}>
+    <Popover onOpenChange={onOpenChange} open={open}>
       <PopoverTrigger asChild>
         <Button variant="default" className="mt-2">
           새로운 일 추가

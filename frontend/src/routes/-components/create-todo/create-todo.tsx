@@ -2,16 +2,18 @@ import * as React from "react"
 import * as ReactDOM from "react-dom"
 import { Transition, TransitionChild } from "@headlessui/react"
 import { CalendarIcon, Check, ChevronsUpDown } from "lucide-react"
+import { toast } from "sonner"
 import { useScrollLock } from "#/lib/scroll-lock"
 import { cn } from "#/lib/utils"
 import { toDateKey, useBowlContext, useFlakeContext, useTodoContext } from "#/lib/state"
 import { Popover, PopoverContent, PopoverTrigger } from "#/components/ui/popover"
 import { Button } from "#/components/ui/button"
 import { Command, CommandInput, CommandItem, CommandList } from "#/components/ui/command"
-import { type bowls, type flakes, todos } from "@/go/models"
+import { type bowls, type flakes } from "@/go/models"
 import * as todosService from "@/go/todos/TodosService"
 import { assert } from "#/lib/assert"
 import { Calendar } from "#/components/ui/calendar"
+import { CreateTodo as CreateTodoSchema } from "#/domain/todo/schema"
 
 type CreateTodoProps = {
   onClose: () => void
@@ -28,10 +30,29 @@ function CreateTodo({ onClose, initialDate }: CreateTodoProps) {
 
   const createTodo = async () => {
     assert(flake !== undefined, `The flake is undefined but createTodo is triggered`)
-    const iso = date.toISOString()
-    const newTodo = todos.Todo.createFrom(await todosService.Create(flake.id, iso))
-    addTodo(newTodo)
-    setOpen(false)
+
+    const zodValidation = CreateTodoSchema.safeParse({
+      flakeId: flake.id,
+      scheduledAt: date,
+    })
+
+    if (zodValidation.error) {
+      toast.error(`할 일을 만드는데 실패하였습니다`, { className: "text-red-500 " })
+      return
+    }
+
+    const payload = zodValidation.data
+    try {
+      const newTodo = await todosService.Create(
+        payload.flakeId,
+        payload.scheduledAt.toISOString()
+      )
+      // TODO I don't know but Why doesn't wails parse date..
+      addTodo({ ...newTodo, scheduledAt: new Date(newTodo.scheduledAt) })
+      setOpen(false)
+    } catch (error: unknown) {
+      toast.error(`할 일을 만드는데 실패하였습니다`, { className: "text-red-500 " })
+    }
   }
 
   React.useEffect(() => {
