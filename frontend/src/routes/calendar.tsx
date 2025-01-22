@@ -1,6 +1,6 @@
 import * as React from "react"
 import { createFileRoute } from "@tanstack/react-router"
-import { CalendarProvider } from "#/lib/todo-calendar"
+import { CalendarProvider } from "#/domain/todo/todo-calendar"
 import { useGlobalOutletSetter } from "#/components/portal"
 import { CalendarBody, CalendarHeader } from "./-components/calendar/calendar"
 import { CREATE_TODO_ID, CreateTodo } from "./-components/create-todo/create-todo"
