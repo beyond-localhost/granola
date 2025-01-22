@@ -7,7 +7,8 @@ import {
   type CalendarCell,
 } from "#/lib/todo-calendar"
 import { cn } from "#/lib/utils"
-import { toDateKey, useFlakeContext, useTodoContext } from "#/lib/state"
+import { useTodoContext, toDateKey } from "#/domain/todo/store"
+import { useFlakeContext } from "#/domain/flake/store"
 import { assert } from "#/lib/assert"
 import { type Todo } from "#/domain/todo/schema"
 import * as todosService from "@/go/todos/TodosService"

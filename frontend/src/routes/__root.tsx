@@ -1,11 +1,9 @@
 import { createRootRoute, Outlet } from "@tanstack/react-router"
 import { Toaster } from "sonner"
 import { bootStrapPromise } from "#/lib/bootstrap"
-import {
-  BowlContextProvider,
-  FlakeContextProvider,
-  TodoContextProvider,
-} from "#/lib/state"
+import { BowlContextProvider } from "#/domain/bowl/store"
+import { FlakeContextProvider } from "#/domain/flake/store"
+import { TodoContextProvider } from "#/domain/todo/store"
 import { GlobalOutletProvider, GlobalOutlet } from "#/components/portal"
 import { NavigationCommand } from "./-components/navigation-command/navigation-command"
 
