@@ -1,14 +1,15 @@
 import * as React from "react"
-import ReactDOM from "react-dom"
-
-import { useBowlContext, useFlakeContext, useTodoContext } from "#/lib/state"
+import * as ReactDOM from "react-dom"
 import {
-  ColumnDef,
+  type ColumnDef,
   useReactTable,
   getCoreRowModel,
   flexRender,
   getPaginationRowModel,
 } from "@tanstack/react-table"
+import { PopoverTrigger } from "@radix-ui/react-popover"
+import { MoreHorizontal, Trash2 } from "lucide-react"
+import { useBowlContext, useFlakeContext, useTodoContext } from "#/lib/state"
 import {
   Table,
   TableBody,
@@ -17,16 +18,13 @@ import {
   TableHeader,
   TableRow,
 } from "#/components/ui/table"
-
-import { bowls } from "@/go/models"
+import { type bowls } from "@/go/models"
 import * as bowlsService from "@/go/bowls/BowlsService"
 import { Button } from "#/components/ui/button"
 import { Popover, PopoverContent } from "#/components/ui/popover"
-import { PopoverTrigger } from "@radix-ui/react-popover"
 import { Input } from "#/components/ui/input"
 import { Textarea } from "#/components/ui/textarea"
 import { assert } from "#/lib/assert"
-import { MoreHorizontal, Trash2 } from "lucide-react"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -165,13 +163,21 @@ function BowlList() {
         <CreateBowlCTA />
         <div className="flex gap-1">
           <Button
-            onClick={() => t.previousPage()}
+            onClick={() => {
+              t.previousPage()
+            }}
             size="sm"
             disabled={!t.getCanPreviousPage()}
           >
             이전
           </Button>
-          <Button onClick={() => t.nextPage()} size="sm" disabled={!t.getCanNextPage()}>
+          <Button
+            onClick={() => {
+              t.nextPage()
+            }}
+            size="sm"
+            disabled={!t.getCanNextPage()}
+          >
             다음
           </Button>
         </div>
@@ -190,16 +196,20 @@ function CreateBowlCTA() {
     startTransition(() => {
       const formData = new FormData(event.currentTarget)
       const bowlName = formData.get("bowlName")
-      const bowlDescription = formData.get("bowlDescription") || ""
+      const bowlDescription = formData.get("bowlDescription") ?? ""
       assert(
         typeof bowlName === "string" && bowlName.length <= 20,
         `bowlName must be a string with length <= 20`
       )
       assert(typeof bowlDescription === "string", `bowlDescription must be a string`)
+
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises -- TODO The toast should be open in the next phase
       bowlsService
         .Create(bowlName, bowlDescription)
         .then(addBowl)
-        .then(() => setOpen(false))
+        .then(() => {
+          setOpen(false)
+        })
     })
   }
 
@@ -238,7 +248,9 @@ function CreateBowlCTA() {
               type="reset"
               size="sm"
               variant="outline"
-              onClick={() => setOpen(false)}
+              onClick={() => {
+                setOpen(false)
+              }}
             >
               취소
             </Button>

@@ -1,1 +1,10 @@
-src/**/assets/**
+node_modules/**
+dist/**
+build/**
+
+**/assets/**
+**/wailsjs/**
+
+*.config.js
+
+src/routeTree.gen.ts

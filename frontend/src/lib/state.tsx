@@ -1,9 +1,7 @@
 import * as React from "react"
 import { createStore } from "zustand"
 import { useShallow } from "zustand/shallow"
-
 import { useStoreWithEqualityFn } from "zustand/traditional"
-
 import * as model from "@/go/models"
 import { assert } from "./assert"
 
@@ -21,39 +19,42 @@ type BowlState = {
 
 function createBowlStore(initialData: Bowl[]) {
   const map = new Map<Id, Bowl>()
-  for (let i = 0; i < initialData.length; i++) {
-    const bowl = initialData[i]
+  for (const bowl of initialData) {
     map.set(bowl.id, bowl)
   }
+
   return createStore<BowlState>()((set) => {
     return {
       map,
-      add: (bowl: Bowl) =>
+      add: (bowl: Bowl) => {
         set((state) => {
           const newMap = new Map(state.map)
           newMap.set(bowl.id, bowl)
           return {
             map: newMap,
           }
-        }),
-      update: (id: Id, update: Bowl) =>
+        })
+      },
+      update: (id: Id, update: Bowl) => {
         set((state) => {
           const newMap = new Map(state.map)
           const bowl = newMap.get(id)
-          assert(bowl != undefined, `The bowl(${id}) should not be nullable`)
+          assert(bowl !== undefined, `The bowl(${id.toString()}) should not be nullable`)
           newMap.set(update.id, update)
           return {
             map: newMap,
           }
-        }),
-      remove: (id: Id) =>
+        })
+      },
+      remove: (id: Id) => {
         set((state) => {
           const newMap = new Map(state.map)
           newMap.delete(id)
           return {
             map: newMap,
           }
-        }),
+        })
+      },
     }
   })
 }
@@ -66,7 +67,7 @@ function useBowlContext<T>(
   equalityFn?: (left: T, right: T) => boolean
 ): T {
   const store = React.useContext(BowlContext)
-  if (store == null) {
+  if (store === null) {
     throw new Error("useBowlContext should be called within BowlProvider")
   }
   return useStoreWithEqualityFn(store, useShallow(selector), equalityFn)
@@ -88,41 +89,46 @@ type FlakeState = {
 
 function createFlakeStore(initialData: Flake[]) {
   const map = new Map<Id, Flake>()
-  for (let i = 0; i < initialData.length; i++) {
-    const flake = initialData[i]
+  for (const flake of initialData) {
     map.set(flake.id, flake)
   }
 
   return createStore<FlakeState>()((set) => {
     return {
       map,
-      add: (flake: Flake) =>
+      add: (flake: Flake) => {
         set((state) => {
           const newMap = new Map(state.map)
           newMap.set(flake.id, flake)
           return {
             map: newMap,
           }
-        }),
-      update: (id: Id, update: Flake) =>
+        })
+      },
+      update: (id: Id, update: Flake) => {
         set((state) => {
           const newMap = new Map(state.map)
           const flake = newMap.get(id)
-          assert(flake != undefined, `The flake(${id}) should not be nullable`)
+          assert(
+            flake !== undefined,
+            `The flake(${id.toString()}) should not be nullable`
+          )
           newMap.set(update.id, update)
           return {
             map: newMap,
           }
-        }),
-      remove: (id: Id) =>
+        })
+      },
+      remove: (id: Id) => {
         set((state) => {
           const newMap = new Map(state.map)
           newMap.delete(id)
           return {
             map: newMap,
           }
-        }),
-      removeByBowlId: (bowlId: Id) =>
+        })
+      },
+      removeByBowlId: (bowlId: Id) => {
         set((state) => {
           const filtered = Array.from(state.map.entries()).filter(
             ([_, value]) => value.bowlId !== bowlId
@@ -131,12 +137,13 @@ function createFlakeStore(initialData: Flake[]) {
           return {
             map: newMap,
           }
-        }),
+        })
+      },
     }
   })
 }
 type FlakeStore = ReturnType<typeof createFlakeStore>
-const FlakeContext = React.createContext<undefined | FlakeStore>(undefined)
+const FlakeContext = React.createContext<null | FlakeStore>(null)
 
 function FlakeContextProvider(props: React.PropsWithChildren<{ initialData: Flake[] }>) {
   const store = React.useRef(createFlakeStore(props.initialData)).current
@@ -148,7 +155,7 @@ function useFlakeContext<T>(
   equalityFn?: (left: T, right: T) => boolean
 ) {
   const store = React.useContext(FlakeContext)
-  if (store == undefined) {
+  if (store === null) {
     throw new Error("useBowlContext should be called within FlakeProvider")
   }
   return useStoreWithEqualityFn(store, useShallow(selector), equalityFn)
@@ -162,7 +169,7 @@ const DATE_REGEX = /^\d{4}-\d{2}-\d{2}$/
 const predicateDateKey = (v: string): v is DateKey => DATE_REGEX.test(v)
 
 const toDateKey = (d: Date): DateKey => {
-  const ret = `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, "0")}-${d.getDate().toString().padStart(2, "0")}`
+  const ret = `${d.getFullYear().toString()}-${(d.getMonth() + 1).toString().padStart(2, "0")}-${d.getDate().toString().padStart(2, "0")}`
   assert(predicateDateKey(ret), `the ${ret} is not YYYY-MM-DD format`)
   return ret
 }
@@ -178,13 +185,13 @@ type TodoState = {
 
 function createTodoStore(initialData: Todo[]) {
   const map = new Map<DateKey, Todo[]>()
-  for (let i = 0; i < initialData.length; i++) {
-    const todo = initialData[i]
+
+  for (const todo of initialData) {
     const dateKey = toDateKey(todo.scheduledAt)
-    if (map.get(dateKey) == undefined) {
+    if (map.get(dateKey) === undefined) {
       map.set(dateKey, [])
     }
-
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- Because of the initialization, We can safe get the array
     const todoList = map.get(dateKey)!
     todoList.push(todo)
     todoList.sort((a, b) => a.id - b.id)
@@ -193,22 +200,23 @@ function createTodoStore(initialData: Todo[]) {
   return createStore<TodoState>()((set) => {
     return {
       map,
-      add: (todo: Todo) =>
+      add: (todo: Todo) => {
         set((state) => {
           const newMap = new Map(state.map)
           const dateKey = toDateKey(todo.scheduledAt)
-          if (newMap.get(dateKey) == undefined) {
+          if (newMap.get(dateKey) === undefined) {
             newMap.set(dateKey, [])
           }
-
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- Because of the initialization, We can safe get the array
           const todoList = newMap.get(dateKey)!
           todoList.push(todo)
           todoList.sort((a, b) => a.id - b.id)
           return {
             map: newMap,
           }
-        }),
-      setDone: (todo: Todo) =>
+        })
+      },
+      setDone: (todo: Todo) => {
         set((state) => {
           const newMap = new Map(state.map)
           const key = toDateKey(todo.scheduledAt)
@@ -232,8 +240,9 @@ function createTodoStore(initialData: Todo[]) {
           return {
             map: newMap,
           }
-        }),
-      remove: (todo: Todo) =>
+        })
+      },
+      remove: (todo: Todo) => {
         set((state) => {
           const newMap = new Map(state.map)
           const key = toDateKey(todo.scheduledAt)
@@ -251,8 +260,9 @@ function createTodoStore(initialData: Todo[]) {
           return {
             map: newMap,
           }
-        }),
-      removeByFlakeId: (flakeId: Id) =>
+        })
+      },
+      removeByFlakeId: (flakeId: Id) => {
         set((state) => {
           const newMap = new Map(state.map)
           for (const [key, todoList] of newMap) {
@@ -264,19 +274,20 @@ function createTodoStore(initialData: Todo[]) {
           return {
             map: newMap,
           }
-        }),
+        })
+      },
     }
   })
 }
 
 type TodoStore = ReturnType<typeof createTodoStore>
-const TodoContext = React.createContext<undefined | TodoStore>(undefined)
+const TodoContext = React.createContext<null | TodoStore>(null)
 function useTodoContext<T>(
   selector: (state: TodoState) => T,
   equalityFn?: (left: T, right: T) => boolean
 ) {
   const store = React.useContext(TodoContext)
-  if (store == undefined) {
+  if (store === null) {
     throw new Error("useBowlContext should be called within FlakeProvider")
   }
 

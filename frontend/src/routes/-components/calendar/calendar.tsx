@@ -1,27 +1,24 @@
 import * as React from "react"
-
+import { ChevronLeft, ChevronRight, Trash2, CircleCheck, Undo2 } from "lucide-react"
 import {
   useCalendarGridContext,
   useCurrentDateContext,
   type CalendarCell,
 } from "#/lib/todo-calendar"
-
 import { cn } from "#/lib/utils"
 import { toDateKey, useFlakeContext, useTodoContext } from "#/lib/state"
 import { assert } from "#/lib/assert"
-import { todos } from "@/go/models"
+import { type todos } from "@/go/models"
 import * as todosService from "@/go/todos/TodosService"
-import { ChevronLeft, ChevronRight, Trash2, CircleCheck, Undo2 } from "lucide-react"
 import { useGlobalOutletSetter } from "#/components/portal"
-import { CREATE_TODO_ID, CreateTodo } from "../create-todo/create-todo"
 import { debounce } from "#/lib/debounce"
-
 import {
   ContextMenu,
   ContextMenuContent,
   ContextMenuItem,
   ContextMenuTrigger,
 } from "#/components/ui/context-menu"
+import { CREATE_TODO_ID, CreateTodo } from "../create-todo/create-todo"
 
 function CalendarHeader() {
   const { next, prev, currentDate, now } = useCurrentDateContext()
@@ -37,20 +34,29 @@ function CalendarHeader() {
         <div>
           <div className="flex items-center gap-1">
             <button
+              type="button"
               className="border border-zinc-200 rounded-sm p-px"
-              onClick={() => prev()}
+              onClick={() => {
+                prev()
+              }}
             >
               <ChevronLeft size={18} strokeWidth={1.5} />
             </button>
             <button
+              type="button"
               className="border border-zinc-200 rounded-sm py-px px-2 text-xs leading-[18px]"
-              onClick={() => now()}
+              onClick={() => {
+                now()
+              }}
             >
               오늘
             </button>
             <button
+              type="button"
               className="border border-zinc-200 rounded-sm p-px"
-              onClick={() => next()}
+              onClick={() => {
+                next()
+              }}
             >
               <ChevronRight size={18} strokeWidth={1.5} />
             </button>
@@ -84,7 +90,7 @@ function CalendarBody() {
     <div className="grid grid-cols-7 grid-rows-6 justify-items-end h-[calc(100%-84px)]">
       {grid.map((week, rowIndex, { length: rowLength }) => {
         return (
-          <React.Fragment key={rowIndex}>
+          <React.Fragment key={week.join("") + rowIndex.toString()}>
             {week.map((date, columnIndex, { length: columnLength }) => {
               return (
                 <div
@@ -114,7 +120,7 @@ function CalendarCell({ cell }: { cell: CalendarCell }) {
   const containerRef = React.useRef<HTMLDivElement>(null)
   const itemAreaRef = React.useRef<HTMLUListElement>(null)
   const todoList = useTodoContext((state) => {
-    return state.map.get(cell.key) || []
+    return state.map.get(cell.key) ?? []
   })
 
   const currentDateKey = toDateKey(today)
@@ -161,7 +167,9 @@ function CalendarCell({ cell }: { cell: CalendarCell }) {
       CREATE_TODO_ID,
       <CreateTodo
         initialDate={cell.rawDate}
-        onClose={() => setter.remove(CREATE_TODO_ID)}
+        onClose={() => {
+          setter.remove(CREATE_TODO_ID)
+        }}
       />
     )
   }
@@ -180,7 +188,7 @@ function CalendarCell({ cell }: { cell: CalendarCell }) {
           "flex gap-[2px] items-center justify-end": sameDay,
         })}
       >
-        {cell.date === 1 ? `${cell.month}월 ` : null}
+        {cell.date === 1 ? `${cell.month.toString()}월 ` : null}
         <span
           className={cn(
             sameDay
@@ -212,9 +220,9 @@ function CalendarCell({ cell }: { cell: CalendarCell }) {
 
 function TodoItem({ todo }: { todo: todos.Todo }) {
   const flake = useFlakeContext((state) => {
-    const flake = state.map.get(todo.flakeId)
-    assert(flake != undefined, `Flake should not be nullish`)
-    return flake
+    const target = state.map.get(todo.flakeId)
+    assert(target !== undefined, `Flake should not be nullish`)
+    return target
   })
 
   const setDone = useTodoContext((state) => state.setDone)

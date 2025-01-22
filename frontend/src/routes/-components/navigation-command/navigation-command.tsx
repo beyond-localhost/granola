@@ -1,12 +1,12 @@
 import * as React from "react"
-import ReactDOM from "react-dom"
-import { Command, CommandItem, CommandList } from "#/components/ui/command"
+import * as ReactDOM from "react-dom"
 import { Transition, TransitionChild } from "@headlessui/react"
+import { Link } from "@tanstack/react-router"
+import { Calendar, Home } from "lucide-react"
+import { Command, CommandItem, CommandList } from "#/components/ui/command"
 import { useGlobalOutletSetter } from "#/components/portal"
 import { useScrollLock } from "#/lib/scroll-lock"
 import { cn } from "#/lib/utils"
-import { Link } from "@tanstack/react-router"
-import { Calendar, Home } from "lucide-react"
 
 const NAVIGAION_COMMAND_ID = "navigation-command"
 
@@ -18,7 +18,11 @@ function NavigationCommand() {
         event.preventDefault()
         setter.append(
           NAVIGAION_COMMAND_ID,
-          <NavigationCommandPortal onClose={() => setter.remove(NAVIGAION_COMMAND_ID)} />
+          <NavigationCommandPortal
+            onClose={() => {
+              setter.remove(NAVIGAION_COMMAND_ID)
+            }}
+          />
         )
       }
     }
@@ -53,10 +57,12 @@ function NavigationCommandPortal({ onClose }: NavigationCommandPortalProps) {
   }, [setOpen])
 
   return ReactDOM.createPortal(
-    <Transition show={open} afterLeave={onClose} appear={true}>
+    <Transition show={open} afterLeave={onClose} appear>
       <TransitionChild>
         <div
-          onClick={() => setOpen(false)}
+          onClick={() => {
+            setOpen(false)
+          }}
           className={cn(
             "fixed inset-0 w-full backdrop-blur-sm transition-all",
             "data-[closed]:backdrop-blur-none bg-transparent",

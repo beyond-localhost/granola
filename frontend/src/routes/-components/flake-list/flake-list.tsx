@@ -1,13 +1,14 @@
 import * as React from "react"
-
-import { useBowlContext, useFlakeContext, useTodoContext } from "#/lib/state"
 import {
-  ColumnDef,
+  type ColumnDef,
   useReactTable,
   getCoreRowModel,
   flexRender,
   getPaginationRowModel,
 } from "@tanstack/react-table"
+import { PopoverTrigger } from "@radix-ui/react-popover"
+import { MoreHorizontal, Trash2 } from "lucide-react"
+import { useBowlContext, useFlakeContext, useTodoContext } from "#/lib/state"
 import {
   Table,
   TableBody,
@@ -16,17 +17,13 @@ import {
   TableHeader,
   TableRow,
 } from "#/components/ui/table"
-
-import { bowls, flakes } from "@/go/models"
-
+import { type bowls, type flakes } from "@/go/models"
 import * as flakesService from "@/go/flakes/FlakeService"
 import { Button } from "#/components/ui/button"
 import { Popover, PopoverContent } from "#/components/ui/popover"
-import { PopoverTrigger } from "@radix-ui/react-popover"
 import { Input } from "#/components/ui/input"
 import { Textarea } from "#/components/ui/textarea"
 import { assert } from "#/lib/assert"
-import { MoreHorizontal, Trash2 } from "lucide-react"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -69,7 +66,7 @@ function FlakeList() {
   const removeFlake = useFlakeContext((state) => state.remove)
   const removeTodoByFlakeId = useTodoContext((state) => state.removeByFlakeId)
 
-  const onRemoveFlakeClick = (flake: flakes.Flake) => async () => {
+  const onRemoveFlakeClick = async (flake: flakes.Flake) => {
     await flakesService.DeleteById(flake.id)
 
     removeTodoByFlakeId(flake.id)
@@ -77,7 +74,7 @@ function FlakeList() {
   }
 
   const t = useReactTable({
-    data: data,
+    data,
     columns: flakeColumns,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
@@ -137,7 +134,9 @@ function FlakeList() {
                                     추가 액션
                                   </span>
                                 </DropdownMenuLabel>
-                                <DropdownMenuItem onClick={onRemoveFlakeClick(flake)}>
+                                <DropdownMenuItem
+                                  onClick={() => onRemoveFlakeClick(flake)}
+                                >
                                   <Trash2 />
                                   <span className="ml-px select-none cursor-pointer">
                                     이 덩어리 삭제
@@ -168,13 +167,21 @@ function FlakeList() {
         <CreateFlakeCTA bowls={Array.from(bowls.values())} />
         <div className="flex gap-1 mt-2">
           <Button
-            onClick={() => t.previousPage()}
+            onClick={() => {
+              t.previousPage()
+            }}
             size="sm"
             disabled={!t.getCanPreviousPage()}
           >
             이전
           </Button>
-          <Button onClick={() => t.nextPage()} size="sm" disabled={!t.getCanNextPage()}>
+          <Button
+            onClick={() => {
+              t.nextPage()
+            }}
+            size="sm"
+            disabled={!t.getCanNextPage()}
+          >
             다음
           </Button>
         </div>
@@ -196,8 +203,8 @@ function CreateFlakeCTA({ bowls }: CreateFlakeCTAProps) {
     startTransition(() => {
       const formData = new FormData(event.currentTarget)
       const flakeName = formData.get("flakeName")
-      const flakeDescription = formData.get("flakeDescription") || ""
-      let bowlId: FormDataEntryValue | number = formData.get("bowlId") || ""
+      const flakeDescription = formData.get("flakeDescription") ?? ""
+      let bowlId: FormDataEntryValue | number = formData.get("bowlId") ?? ""
 
       assert(
         typeof bowlId === "string",
@@ -205,7 +212,7 @@ function CreateFlakeCTA({ bowls }: CreateFlakeCTAProps) {
       )
 
       bowlId = Number.parseInt(bowlId, 10)
-      assert(Number.isNaN(bowlId) === false, `bowlId must be a valid number`)
+      assert(!Number.isNaN(bowlId), `bowlId must be a valid number`)
 
       assert(
         typeof flakeName === "string" && flakeName.length <= 20,
@@ -213,10 +220,13 @@ function CreateFlakeCTA({ bowls }: CreateFlakeCTAProps) {
       )
       assert(typeof flakeDescription === "string", `bowlDescription must be a string`)
 
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises -- TODO In the next phase, the toast should be open.
       flakesService
         .Create(flakeName, flakeDescription, bowlId)
         .then(addFlake)
-        .then(() => setOpen(false))
+        .then(() => {
+          setOpen(false)
+        })
     })
   }
 
@@ -267,7 +277,9 @@ function CreateFlakeCTA({ bowls }: CreateFlakeCTAProps) {
               type="reset"
               size="sm"
               variant="outline"
-              onClick={() => setOpen(false)}
+              onClick={() => {
+                setOpen(false)
+              }}
             >
               취소
             </Button>

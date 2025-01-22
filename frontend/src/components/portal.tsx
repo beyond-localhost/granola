@@ -1,5 +1,4 @@
 import * as React from "react"
-
 import { assert } from "#/lib/assert"
 
 type ReactNodeKey = string
@@ -12,13 +11,13 @@ type OutletAction = {
 }
 
 const outletAction: OutletAction = {
-  append: (id: ReactNodeKey, node: React.ReactNode) => {
+  append: (_: ReactNodeKey, __: React.ReactNode) => {
     assert(
       false,
       `outletAction.append is called during render phase, this is not expected and the logic should be inside React.useEffect`
     )
   },
-  remove: (id: ReactNodeKey) => {
+  remove: (_: ReactNodeKey) => {
     assert(
       false,
       `outletAction.remove is called during render phase, this is not expected and the logic should be inside React.useEffect`
@@ -33,34 +32,37 @@ function GlobalOutletProvider({ children }: { children: React.ReactNode }) {
   const nodeMap = React.useRef<ReactNodeMap>(new Map()).current
   const [outlet, setOutlet] = React.useState<OutletState>(null)
 
-  const append = React.useCallback((id: ReactNodeKey, node: React.ReactNode) => {
-    assert(
-      nodeMap.get(id) == null,
-      `The other ReactNode(${nodeMap.get(id)}) is using the ${id}. This is not expected`
-    )
-    nodeMap.set(id, node)
-    setOutlet(
-      <React.Fragment>
-        {Array.from(nodeMap.entries()).map(([key, node]) => {
-          return <React.Fragment key={key}>{node}</React.Fragment>
-        })}
-      </React.Fragment>
-    )
-  }, [])
+  const append = React.useCallback(
+    (id: ReactNodeKey, node: React.ReactNode) => {
+      assert(
+        nodeMap.get(id) === undefined,
+        `The other ReactNode is using the ${id}. This is not expected`
+      )
+      nodeMap.set(id, node)
+      setOutlet(
+        <>
+          {Array.from(nodeMap.entries()).map(([key, renderedNode]) => {
+            return <React.Fragment key={key}>{renderedNode}</React.Fragment>
+          })}
+        </>
+      )
+    },
+    [nodeMap]
+  )
 
-  /**
-   * @description It would not throw an error when any nodes is bound to the id.
-   */
-  const remove = React.useCallback((id: ReactNodeKey) => {
-    nodeMap.delete(id)
-    setOutlet(
-      <React.Fragment>
-        {Array.from(nodeMap.entries()).map(([key, node]) => {
-          return <React.Fragment key={key}>{node}</React.Fragment>
-        })}
-      </React.Fragment>
-    )
-  }, [])
+  const remove = React.useCallback(
+    (id: ReactNodeKey) => {
+      nodeMap.delete(id)
+      setOutlet(
+        <>
+          {Array.from(nodeMap.entries()).map(([key, node]) => {
+            return <React.Fragment key={key}>{node}</React.Fragment>
+          })}
+        </>
+      )
+    },
+    [nodeMap]
+  )
 
   React.useLayoutEffect(() => {
     outletAction.append = append
@@ -90,7 +92,7 @@ function GlobalOutlet() {
 
 function useGlobalOutletSetter() {
   const ctx = React.useContext(OutletSetterContext)
-  if (ctx == null) {
+  if (ctx === null) {
     throw new Error(`useGlobalOutletSetter should be called within GlobalOutletProvider`)
   }
   return ctx

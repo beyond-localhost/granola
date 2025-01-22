@@ -1,19 +1,16 @@
 import * as React from "react"
-import { DateKey, toDateKey } from "./state"
+import { type DateKey, toDateKey } from "./state"
 
-const CurrentDateContext = React.createContext<
-  | {
-      currentDate: Date
-      prev: () => void
-      next: () => void
-      now: () => void
-    }
-  | undefined
->(undefined)
+const CurrentDateContext = React.createContext<{
+  currentDate: Date
+  prev: () => void
+  next: () => void
+  now: () => void
+} | null>(null)
 
 function useCurrentDateContext() {
   const ctx = React.useContext(CurrentDateContext)
-  if (ctx == undefined) {
+  if (ctx === null) {
     throw new Error("useCurrentDateContext should be called within CalendarProvider")
   }
   return ctx
@@ -24,21 +21,18 @@ type CalendarCell = {
   month: number
   date: number
   day: number
-
   monthStatus: "prev" | "next" | "current"
   key: DateKey
   rawDate: Date
 }
 
-type CalenderWeekSnapshot = Array<CalendarCell>
+type CalenderWeekSnapshot = CalendarCell[]
 
-const CalendarGridContext = React.createContext<CalenderWeekSnapshot[] | undefined>(
-  undefined
-)
+const CalendarGridContext = React.createContext<CalenderWeekSnapshot[] | null>(null)
 
 function useCalendarGridContext() {
   const ctx = React.useContext(CalendarGridContext)
-  if (ctx == undefined) {
+  if (ctx === null) {
     throw new Error("useCalendarGridContext should be called within CalendarProvider")
   }
   return ctx
@@ -50,7 +44,7 @@ type Props = {
 }
 
 function CalendarProvider({ initialDate, children }: Props) {
-  const [currentDate, setCurrentDate] = React.useState(() => initialDate || new Date())
+  const [currentDate, setCurrentDate] = React.useState(() => initialDate ?? new Date())
 
   const gridStart = React.useMemo(() => {
     const first = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1)
@@ -61,7 +55,7 @@ function CalendarProvider({ initialDate, children }: Props) {
   }, [currentDate])
 
   const grid = React.useMemo<CalenderWeekSnapshot[]>(() => {
-    const ret: Array<CalenderWeekSnapshot> = []
+    const ret: CalenderWeekSnapshot[] = []
     const cur = new Date(gridStart)
 
     for (let row = 0; row < 6; row++) {
@@ -69,12 +63,14 @@ function CalendarProvider({ initialDate, children }: Props) {
 
       for (let col = 0; col < 7; col++) {
         const snapshot = new Date(cur)
-        const status: "prev" | "next" | "current" =
-          snapshot.getMonth() === currentDate.getMonth()
-            ? "current"
-            : snapshot < currentDate
-              ? "prev"
-              : "next"
+        let status: "prev" | "next" | "current"
+        if (snapshot.getMonth() === currentDate.getMonth()) {
+          status = "current"
+        } else if (snapshot < currentDate) {
+          status = "prev"
+        } else {
+          status = "next"
+        }
 
         const key = toDateKey(snapshot)
         week.push({
@@ -95,7 +91,7 @@ function CalendarProvider({ initialDate, children }: Props) {
     return ret
   }, [currentDate, gridStart])
 
-  const onPrev = React.useCallback(async () => {
+  const onPrev = React.useCallback(() => {
     setCurrentDate((prev) => {
       const next = new Date(prev)
       next.setMonth(next.getMonth() - 1)
@@ -103,7 +99,7 @@ function CalendarProvider({ initialDate, children }: Props) {
     })
   }, [])
 
-  const onNext = React.useCallback(async () => {
+  const onNext = React.useCallback(() => {
     setCurrentDate((prev) => {
       const next = new Date(prev)
       next.setMonth(next.getMonth() + 1)
@@ -114,7 +110,7 @@ function CalendarProvider({ initialDate, children }: Props) {
   const onToday = React.useCallback(() => {
     setCurrentDate((prev) => {
       const today = new Date()
-      if (toDateKey(today) == toDateKey(prev)) {
+      if (toDateKey(today) === toDateKey(prev)) {
         return prev
       }
       return today
@@ -123,7 +119,7 @@ function CalendarProvider({ initialDate, children }: Props) {
 
   const currentDateContextValue = React.useMemo(() => {
     return { currentDate, prev: onPrev, next: onNext, now: onToday }
-  }, [currentDate, onPrev, onNext])
+  }, [currentDate, onPrev, onNext, onToday])
 
   return (
     <CurrentDateContext.Provider value={currentDateContextValue}>

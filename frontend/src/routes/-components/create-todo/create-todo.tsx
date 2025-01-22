@@ -1,15 +1,14 @@
 import * as React from "react"
-import ReactDOM from "react-dom"
+import * as ReactDOM from "react-dom"
 import { Transition, TransitionChild } from "@headlessui/react"
+import { CalendarIcon, Check, ChevronsUpDown } from "lucide-react"
 import { useScrollLock } from "#/lib/scroll-lock"
 import { cn } from "#/lib/utils"
 import { toDateKey, useBowlContext, useFlakeContext, useTodoContext } from "#/lib/state"
 import { Popover, PopoverContent, PopoverTrigger } from "#/components/ui/popover"
 import { Button } from "#/components/ui/button"
-import { CalendarIcon, Check, ChevronsUpDown } from "lucide-react"
 import { Command, CommandInput, CommandItem, CommandList } from "#/components/ui/command"
-
-import { bowls, flakes, todos } from "@/go/models"
+import { type bowls, type flakes, todos } from "@/go/models"
 import * as todosService from "@/go/todos/TodosService"
 import { assert } from "#/lib/assert"
 import { Calendar } from "#/components/ui/calendar"
@@ -23,15 +22,14 @@ function CreateTodo({ onClose, initialDate }: CreateTodoProps) {
   const [open, setOpen] = React.useState(true)
   const [bowl, setBowl] = React.useState<bowls.Bowl>()
   const [flake, setFlake] = React.useState<flakes.Flake>()
-  const [date, setDate] = React.useState<Date>(() => initialDate || new Date())
+  const [date, setDate] = React.useState<Date>(() => initialDate ?? new Date())
 
   const addTodo = useTodoContext((state) => state.add)
 
   const createTodo = async () => {
-    assert(flake != undefined, `The flake is undefined but createTodo is triggered`)
-    assert(date != undefined, `The date is undefined but createTodo is triggered`)
+    assert(flake !== undefined, `The flake is undefined but createTodo is triggered`)
     const iso = date.toISOString()
-    const newTodo = todos.Todo.createFrom(await todosService.Create(flake?.id, iso))
+    const newTodo = todos.Todo.createFrom(await todosService.Create(flake.id, iso))
     addTodo(newTodo)
     setOpen(false)
   }
@@ -52,10 +50,12 @@ function CreateTodo({ onClose, initialDate }: CreateTodoProps) {
 
   return ReactDOM.createPortal(
     <DialogRoot open={open}>
-      <Transition show={open} appear={true} afterLeave={onClose}>
+      <Transition show={open} appear afterLeave={onClose}>
         <TransitionChild>
           <div
-            onClick={() => setOpen(false)}
+            onClick={() => {
+              setOpen(false)
+            }}
             className={cn(
               "fixed inset-0 w-full bg-gradient-to-t from-pink-200 to-pink-500 transition opacity-50",
               "data-[closed]:opacity-0",
@@ -77,13 +77,12 @@ function CreateTodo({ onClose, initialDate }: CreateTodoProps) {
             )}
           >
             <div>
-              {date == undefined ? null : (
-                <SelectDate
-                  key={date.toString()}
-                  currentDate={date}
-                  setCurrentDate={setDate}
-                />
-              )}
+              <SelectDate
+                key={date.toString()}
+                currentDate={date}
+                setCurrentDate={setDate}
+              />
+
               <div className="mt-6">
                 <SelectBowl
                   currentBowl={bowl}
@@ -93,7 +92,7 @@ function CreateTodo({ onClose, initialDate }: CreateTodoProps) {
                   }}
                 />
               </div>
-              {bowl == undefined ? null : (
+              {bowl === undefined ? null : (
                 <div className="mt-6">
                   <SelectFlake
                     key={bowl.id}
@@ -107,13 +106,18 @@ function CreateTodo({ onClose, initialDate }: CreateTodoProps) {
               )}
             </div>
             <div className="absolute bottom-6 right-6 flex gap-4">
-              <Button variant="ghost" onClick={() => setOpen(false)}>
+              <Button
+                variant="ghost"
+                onClick={() => {
+                  setOpen(false)
+                }}
+              >
                 취소
               </Button>
               <Button
                 variant="default"
                 className="bg-pink-700/90 transition-colors"
-                disabled={typeof flake == undefined || date == undefined}
+                disabled={flake === undefined}
                 onClick={createTodo}
               >
                 만들기
@@ -258,7 +262,7 @@ function SelectDate({
           className="bg-neutral-100/10 justify-between border-none text-neutral-900 hover:bg-pink-400/30"
         >
           <CalendarIcon />
-          {currentDate == undefined ? "날짜를 정해주세요" : toDateKey(currentDate)}
+          {currentDate === undefined ? "날짜를 정해주세요" : toDateKey(currentDate)}
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-auto p-o" align="start">

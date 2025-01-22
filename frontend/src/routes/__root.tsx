@@ -1,12 +1,10 @@
 import { createRootRoute, Outlet } from "@tanstack/react-router"
-
 import { bootStrapPromise } from "#/lib/bootstrap"
 import {
   BowlContextProvider,
   FlakeContextProvider,
   TodoContextProvider,
 } from "#/lib/state"
-
 import { GlobalOutletProvider, GlobalOutlet } from "#/components/portal"
 import { NavigationCommand } from "./-components/navigation-command/navigation-command"
 
