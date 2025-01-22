@@ -214,12 +214,12 @@ function CreateBowlCTA() {
     setErrorMap(defaultErrorMap)
 
     startTransition(() => {
-      const ret = CreateBowl.safeParse(
+      const zodValidation = CreateBowl.safeParse(
         Object.fromEntries(new FormData(event.currentTarget))
       )
 
-      if (!ret.success) {
-        const formatted = ret.error.format()
+      if (!zodValidation.success) {
+        const formatted = zodValidation.error.format()
         setErrorMap((prev) => {
           return {
             ...prev,
@@ -229,7 +229,7 @@ function CreateBowlCTA() {
         })
         return
       }
-      const payload = ret.data
+      const payload = zodValidation.data
 
       bowlsService
         .Create(payload.name, payload.description)
@@ -259,7 +259,7 @@ function CreateBowlCTA() {
               <Input
                 required
                 minLength={1}
-                // maxLength={20}
+                maxLength={20}
                 name="name"
                 id="name"
                 placeholder="20자 이내"
