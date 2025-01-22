@@ -1,137 +1,9 @@
 import * as React from "react"
 import { createStore } from "zustand"
-import { useShallow } from "zustand/shallow"
 import { useStoreWithEqualityFn } from "zustand/traditional"
-import { type Bowl } from "#/domain/bowl/schema"
-import { type Flake } from "#/domain/flake/schema"
 import { type Todo } from "#/domain/todo/schema"
-import { assert } from "./assert"
-
-// All database model's id is int64
-type Id = number
-
-type BowlState = {
-  map: Map<Id, Bowl>
-  upsert: (bowl: Bowl) => void
-  remove: (id: Id) => void
-}
-
-function createBowlStore(initialData: Bowl[]) {
-  const map = new Map<Id, Bowl>()
-  for (const bowl of initialData) {
-    map.set(bowl.id, bowl)
-  }
-
-  return createStore<BowlState>()((set) => {
-    return {
-      map,
-      upsert: (bowl: Bowl) => {
-        set((state) => {
-          const newMap = new Map(state.map)
-          newMap.set(bowl.id, bowl)
-          return {
-            map: newMap,
-          }
-        })
-      },
-      remove: (id: Id) => {
-        set((state) => {
-          const newMap = new Map(state.map)
-          newMap.delete(id)
-          return {
-            map: newMap,
-          }
-        })
-      },
-    }
-  })
-}
-
-type BowlStore = ReturnType<typeof createBowlStore>
-const BowlContext = React.createContext<null | BowlStore>(null)
-
-function useBowlContext<T>(
-  selector: (state: BowlState) => T,
-  equalityFn?: (left: T, right: T) => boolean
-): T {
-  const store = React.useContext(BowlContext)
-  if (store === null) {
-    throw new Error("useBowlContext should be called within BowlProvider")
-  }
-  return useStoreWithEqualityFn(store, useShallow(selector), equalityFn)
-}
-
-function BowlContextProvider(props: React.PropsWithChildren<{ initialData: Bowl[] }>) {
-  const store = React.useRef(createBowlStore(props.initialData)).current
-  return <BowlContext.Provider value={store}>{props.children}</BowlContext.Provider>
-}
-
-type FlakeState = {
-  map: Map<Id, Flake>
-  upsert: (flake: Flake) => void
-  remove: (id: Id) => void
-  removeByBowlId: (bowlId: Id) => void
-}
-
-function createFlakeStore(initialData: Flake[]) {
-  const map = new Map<Id, Flake>()
-  for (const flake of initialData) {
-    map.set(flake.id, flake)
-  }
-
-  return createStore<FlakeState>()((set) => {
-    return {
-      map,
-      upsert: (flake: Flake) => {
-        set((state) => {
-          const newMap = new Map(state.map)
-          newMap.set(flake.id, flake)
-          return {
-            map: newMap,
-          }
-        })
-      },
-      remove: (id: Id) => {
-        set((state) => {
-          const newMap = new Map(state.map)
-          newMap.delete(id)
-          return {
-            map: newMap,
-          }
-        })
-      },
-      removeByBowlId: (bowlId: Id) => {
-        set((state) => {
-          const filtered = Array.from(state.map.entries()).filter(
-            ([_, value]) => value.bowlId !== bowlId
-          )
-          const newMap = new Map(filtered)
-          return {
-            map: newMap,
-          }
-        })
-      },
-    }
-  })
-}
-type FlakeStore = ReturnType<typeof createFlakeStore>
-const FlakeContext = React.createContext<null | FlakeStore>(null)
-
-function FlakeContextProvider(props: React.PropsWithChildren<{ initialData: Flake[] }>) {
-  const store = React.useRef(createFlakeStore(props.initialData)).current
-  return <FlakeContext.Provider value={store}>{props.children}</FlakeContext.Provider>
-}
-
-function useFlakeContext<T>(
-  selector: (state: FlakeState) => T,
-  equalityFn?: (left: T, right: T) => boolean
-) {
-  const store = React.useContext(FlakeContext)
-  if (store === null) {
-    throw new Error("useBowlContext should be called within FlakeProvider")
-  }
-  return useStoreWithEqualityFn(store, useShallow(selector), equalityFn)
-}
+import { type Id } from "#/domain/common"
+import { assert } from "#/lib/assert"
 
 // YYYY-MM-DD
 type DateKey =
@@ -235,6 +107,7 @@ function createTodoStore(initialData: Todo[]) {
 
 type TodoStore = ReturnType<typeof createTodoStore>
 const TodoContext = React.createContext<null | TodoStore>(null)
+
 function useTodoContext<T>(
   selector: (state: TodoState) => T,
   equalityFn?: (left: T, right: T) => boolean
@@ -252,16 +125,6 @@ function TodoContextProvider(props: React.PropsWithChildren<{ initialData: Todo[
   return <TodoContext.Provider value={store}>{props.children}</TodoContext.Provider>
 }
 
-export {
-  BowlContextProvider,
-  useBowlContext,
-  FlakeContextProvider,
-  useFlakeContext,
-  TodoContextProvider,
-  useTodoContext,
-
-  // utils
-  toDateKey,
-}
+export { TodoContextProvider, useTodoContext, toDateKey }
 
 export type { DateKey }

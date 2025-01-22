@@ -36,5 +36,6 @@ module.exports = {
     "*.config.js",
     "*.config.cjs",
     ".eslintrc.cjs",
+    "src/routeTree.gen.ts",
   ],
 }

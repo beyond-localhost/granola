@@ -9,7 +9,9 @@ import {
 import { PopoverTrigger } from "@radix-ui/react-popover"
 import { MoreHorizontal, Trash2 } from "lucide-react"
 import { toast } from "sonner"
-import { useBowlContext, useFlakeContext, useTodoContext } from "#/lib/state"
+import { useBowlContext } from "#/domain/bowl/store"
+import { useFlakeContext } from "#/domain/flake/store"
+import { useTodoContext } from "#/domain/todo/store"
 import {
   Table,
   TableBody,
