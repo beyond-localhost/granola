@@ -6,5 +6,6 @@ build/**
 **/wailsjs/**
 
 *.config.js
+.eslintrc.cjs
 
 src/routeTree.gen.ts
