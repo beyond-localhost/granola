@@ -1,5 +1,6 @@
 import * as React from "react"
 import { ChevronLeft, ChevronRight, Trash2, CircleCheck, Undo2 } from "lucide-react"
+import { toast } from "sonner"
 import {
   useCalendarGridContext,
   useCurrentDateContext,
@@ -8,7 +9,7 @@ import {
 import { cn } from "#/lib/utils"
 import { toDateKey, useFlakeContext, useTodoContext } from "#/lib/state"
 import { assert } from "#/lib/assert"
-import { type todos } from "@/go/models"
+import { type Todo } from "#/domain/todo/schema"
 import * as todosService from "@/go/todos/TodosService"
 import { useGlobalOutletSetter } from "#/components/portal"
 import { debounce } from "#/lib/debounce"
@@ -218,27 +219,40 @@ function CalendarCell({ cell }: { cell: CalendarCell }) {
   )
 }
 
-function TodoItem({ todo }: { todo: todos.Todo }) {
+function TodoItem({ todo }: { todo: Todo }) {
   const flake = useFlakeContext((state) => {
     const target = state.map.get(todo.flakeId)
     assert(target !== undefined, `Flake should not be nullish`)
     return target
   })
 
-  const setDone = useTodoContext((state) => state.setDone)
+  const doneIcon = todo.done ? <Undo2 /> : <CircleCheck />
+  const doneDisplayMessage = todo.done ? "되돌리기" : "완료하기"
+
+  const setDone = useTodoContext((state) => state.upsert)
   const removeTodo = useTodoContext((state) => state.remove)
 
   const onDeleteSelect = async () => {
-    await todosService.Remove(todo.id)
-    removeTodo(todo)
+    try {
+      await todosService.Remove(todo.id)
+      removeTodo(todo)
+    } catch (error: unknown) {
+      toast.error(`할 일을 지우는데 실패했습니다. ${String(error)}`, {
+        className: "text-red-500",
+      })
+    }
   }
 
   const onDoneSelect = async () => {
-    await todosService.SetDone(todo.id)
-    setDone(todo)
+    try {
+      await todosService.SetDone(todo.id)
+      setDone({ ...todo, done: !todo.done })
+    } catch (error: unknown) {
+      toast.error(`할 일을 변경하는데 실패했습니다. ${String(error)}`, {
+        className: "text-red-500",
+      })
+    }
   }
-  const doneIcon = todo.done ? <Undo2 /> : <CircleCheck />
-  const doneDisplayMessage = todo.done ? "되돌리기" : "완료하기"
 
   return (
     <ContextMenu>

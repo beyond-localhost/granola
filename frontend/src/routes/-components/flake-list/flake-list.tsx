@@ -8,6 +8,7 @@ import {
 } from "@tanstack/react-table"
 import { PopoverTrigger } from "@radix-ui/react-popover"
 import { MoreHorizontal, Trash2 } from "lucide-react"
+import { toast } from "sonner"
 import { useBowlContext, useFlakeContext, useTodoContext } from "#/lib/state"
 import {
   Table,
@@ -17,13 +18,13 @@ import {
   TableHeader,
   TableRow,
 } from "#/components/ui/table"
-import { type bowls, type flakes } from "@/go/models"
+import { type Bowl } from "#/domain/bowl/schema"
+import { type Flake } from "#/domain/flake/schema"
 import * as flakesService from "@/go/flakes/FlakeService"
 import { Button } from "#/components/ui/button"
 import { Popover, PopoverContent } from "#/components/ui/popover"
 import { Input } from "#/components/ui/input"
 import { Textarea } from "#/components/ui/textarea"
-import { assert } from "#/lib/assert"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -31,8 +32,9 @@ import {
   DropdownMenuLabel,
   DropdownMenuTrigger,
 } from "#/components/ui/dropdown-menu"
+import { CreateFlake } from "#/domain/flake/schema"
 
-type FlakeColumn = flakes.Flake & { bowlName: string }
+type FlakeColumn = Flake & { bowlName: string }
 const flakeColumns: ColumnDef<FlakeColumn>[] = [
   {
     accessorKey: "name",
@@ -58,7 +60,6 @@ function FlakeList() {
   const data = React.useMemo<FlakeColumn[]>(() => {
     return Array.from(flakes.values()).map((flake) => {
       const bowl = bowls.get(flake.bowlId)
-      // assert(bowl !== undefined, `bowl must be defined`);
       return { ...flake, bowlName: bowl?.name ?? "알 수 없음" }
     })
   }, [bowls, flakes])
@@ -66,8 +67,15 @@ function FlakeList() {
   const removeFlake = useFlakeContext((state) => state.remove)
   const removeTodoByFlakeId = useTodoContext((state) => state.removeByFlakeId)
 
-  const onRemoveFlakeClick = async (flake: flakes.Flake) => {
-    await flakesService.DeleteById(flake.id)
+  const onRemoveFlakeClick = async (flake: Flake) => {
+    try {
+      await flakesService.DeleteById(flake.id)
+    } catch (error: unknown) {
+      toast.error(`할 일을 지우는데 실패했습니다. ${String(error)}`, {
+        className: "text-red-500",
+      })
+      return
+    }
 
     removeTodoByFlakeId(flake.id)
     removeFlake(flake.id)
@@ -191,47 +199,70 @@ function FlakeList() {
 }
 
 type CreateFlakeCTAProps = {
-  bowls: bowls.Bowl[]
+  bowls: Bowl[]
 }
+
+const defaultErrorMap = {
+  name: "",
+  description: "",
+} satisfies Record<Exclude<keyof CreateFlake, "bowlId">, string>
+
 function CreateFlakeCTA({ bowls }: CreateFlakeCTAProps) {
   const [open, setOpen] = React.useState(false)
   const [pending, startTransition] = React.useTransition()
-  const addFlake = useFlakeContext((state) => state.add)
+  const [errorMap, setErrorMap] = React.useState(defaultErrorMap)
+  const addFlake = useFlakeContext((state) => state.upsert)
 
   const onSubmit: React.FormEventHandler<HTMLFormElement> = (event) => {
     event.preventDefault()
+    setErrorMap(defaultErrorMap)
+
     startTransition(() => {
-      const formData = new FormData(event.currentTarget)
-      const flakeName = formData.get("flakeName")
-      const flakeDescription = formData.get("flakeDescription") ?? ""
-      let bowlId: FormDataEntryValue | number = formData.get("bowlId") ?? ""
-
-      assert(
-        typeof bowlId === "string",
-        `bowlId must be a string but got ${typeof bowlId}`
+      const zodValidation = CreateFlake.safeParse(
+        Object.fromEntries(new FormData(event.currentTarget))
       )
 
-      bowlId = Number.parseInt(bowlId, 10)
-      assert(!Number.isNaN(bowlId), `bowlId must be a valid number`)
+      if (!zodValidation.success) {
+        const formattedError = zodValidation.error.format()
+        if (formattedError.bowlId) {
+          toast.error(`할 일을 만드는 데 실패했습니다. 관리자에게 문의해주세요`, {
+            className: "text-red-500",
+          })
+        } else {
+          setErrorMap((prev) => {
+            return {
+              ...prev,
+              name: formattedError.name?._errors.join("\n") ?? "",
+              description: formattedError.description?._errors.join("\n") ?? "",
+            }
+          })
+        }
 
-      assert(
-        typeof flakeName === "string" && flakeName.length <= 20,
-        `bowlName must be a string with length <= 20`
-      )
-      assert(typeof flakeDescription === "string", `bowlDescription must be a string`)
+        return
+      }
 
-      // eslint-disable-next-line @typescript-eslint/no-floating-promises -- TODO In the next phase, the toast should be open.
+      const payload = zodValidation.data
+
       flakesService
-        .Create(flakeName, flakeDescription, bowlId)
-        .then(addFlake)
-        .then(() => {
+        .Create(payload.name, payload.description, payload.bowlId)
+        .then(addFlake, (reason: unknown) => {
+          toast.error(`할 일을 저장하는데 실패했습니다. ${String(reason)}`, {
+            className: "text-red-500",
+          })
+        })
+        .finally(() => {
           setOpen(false)
         })
     })
   }
 
+  const onOpenChange = (next: boolean) => {
+    setOpen(next)
+    setErrorMap(defaultErrorMap)
+  }
+
   return (
-    <Popover onOpenChange={setOpen} open={open}>
+    <Popover onOpenChange={onOpenChange} open={open}>
       <PopoverTrigger asChild>
         <Button variant="default" className="mt-2">
           새로운 일 추가
@@ -253,23 +284,33 @@ function CreateFlakeCTA({ bowls }: CreateFlakeCTAProps) {
               </select>
             </div>
             <div className="flex flex-col gap-1 mt-2">
-              <label htmlFor="flakeName">이름</label>
+              <label htmlFor="name">이름</label>
               <Input
                 required
                 maxLength={20}
-                name="flakeName"
-                id="flakeName"
+                name="name"
+                id="name"
                 placeholder="20자 이내"
               />
+              {errorMap.name.length > 0 ? (
+                <span role="alert" className="text-red-500 text-xs font-medium ml-1 mt-1">
+                  {errorMap.name}
+                </span>
+              ) : null}
             </div>
             <div className="flex flex-col gap-1 mt-2">
-              <label htmlFor="flakeDescription">설명</label>
+              <label htmlFor="description">설명</label>
               <Textarea
-                name="flakeDescription"
-                id="flakeDescription"
+                name="description"
+                id="description"
                 placeholder="간단한 설명을 적어보아요 (선택사항)"
                 className="resize-none"
               />
+              {errorMap.description.length > 0 ? (
+                <span role="alert" className="text-red-500 text-xs font-medium ml-1 mt-1">
+                  {errorMap.description}
+                </span>
+              ) : null}
             </div>
           </fieldset>
           <div className="flex justify-end mt-2 gap-2">

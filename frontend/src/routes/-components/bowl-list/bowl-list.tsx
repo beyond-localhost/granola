@@ -9,6 +9,7 @@ import {
 } from "@tanstack/react-table"
 import { PopoverTrigger } from "@radix-ui/react-popover"
 import { MoreHorizontal, Trash2 } from "lucide-react"
+import { toast } from "sonner"
 import { useBowlContext, useFlakeContext, useTodoContext } from "#/lib/state"
 import {
   Table,
@@ -18,13 +19,12 @@ import {
   TableHeader,
   TableRow,
 } from "#/components/ui/table"
-import { type bowls } from "@/go/models"
+import { type Bowl, CreateBowl } from "#/domain/bowl/schema"
 import * as bowlsService from "@/go/bowls/BowlsService"
 import { Button } from "#/components/ui/button"
 import { Popover, PopoverContent } from "#/components/ui/popover"
 import { Input } from "#/components/ui/input"
 import { Textarea } from "#/components/ui/textarea"
-import { assert } from "#/lib/assert"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -33,7 +33,7 @@ import {
   DropdownMenuTrigger,
 } from "#/components/ui/dropdown-menu"
 
-const bowlColumns: ColumnDef<bowls.Bowl>[] = [
+const bowlColumns: ColumnDef<Bowl>[] = [
   {
     accessorKey: "name",
     header: "이름",
@@ -58,8 +58,14 @@ function BowlList() {
   const removeFlakeByBowlId = useFlakeContext((state) => state.removeByBowlId)
   const removeTodoByFlakeId = useTodoContext((state) => state.removeByFlakeId)
 
-  const onRemoveBowlClick = (bowl: bowls.Bowl) => async () => {
-    await bowlsService.DeleteById(bowl.id)
+  const onRemoveBowlClick = (bowl: Bowl) => async () => {
+    try {
+      await bowlsService.DeleteById(bowl.id)
+    } catch (reason: unknown) {
+      toast.error(`주제를 삭제하는데 실패했습니다. ${String(reason)}`, {
+        className: "text-red-500",
+      })
+    }
 
     const filteredFlakes = Array.from(flakes).filter(
       ([_, flake]) => flake.bowlId === bowl.id
@@ -186,35 +192,59 @@ function BowlList() {
   )
 }
 
+const defaultErrorMap = {
+  name: "",
+  description: "",
+} satisfies Record<keyof CreateBowl, string>
+
 function CreateBowlCTA() {
   const [open, setOpen] = React.useState(false)
   const [pending, startTransition] = React.useTransition()
-  const addBowl = useBowlContext((state) => state.add)
+  const [errorMap, setErrorMap] = React.useState(defaultErrorMap)
+  const addBowl = useBowlContext((state) => state.upsert)
+
+  const onOpenChange = (nextOpen: boolean) => {
+    setErrorMap(defaultErrorMap)
+    setOpen(nextOpen)
+  }
 
   const onSubmit: React.FormEventHandler<HTMLFormElement> = (event) => {
     event.preventDefault()
-    startTransition(() => {
-      const formData = new FormData(event.currentTarget)
-      const bowlName = formData.get("bowlName")
-      const bowlDescription = formData.get("bowlDescription") ?? ""
-      assert(
-        typeof bowlName === "string" && bowlName.length <= 20,
-        `bowlName must be a string with length <= 20`
-      )
-      assert(typeof bowlDescription === "string", `bowlDescription must be a string`)
+    setErrorMap(defaultErrorMap)
 
-      // eslint-disable-next-line @typescript-eslint/no-floating-promises -- TODO The toast should be open in the next phase
+    startTransition(() => {
+      const zodValidation = CreateBowl.safeParse(
+        Object.fromEntries(new FormData(event.currentTarget))
+      )
+
+      if (!zodValidation.success) {
+        const formatted = zodValidation.error.format()
+        setErrorMap((prev) => {
+          return {
+            ...prev,
+            name: formatted.name?._errors.join("\n") ?? "",
+            description: formatted.description?._errors.join("\n") ?? "",
+          }
+        })
+        return
+      }
+      const payload = zodValidation.data
+
       bowlsService
-        .Create(bowlName, bowlDescription)
-        .then(addBowl)
-        .then(() => {
+        .Create(payload.name, payload.description)
+        .then(addBowl, (reason: unknown) => {
+          toast.error(`주제를 저장하는데 실패했습니다. ${String(reason)}`, {
+            className: "text-red-500",
+          })
+        })
+        .finally(() => {
           setOpen(false)
         })
     })
   }
 
   return (
-    <Popover onOpenChange={setOpen} open={open}>
+    <Popover onOpenChange={onOpenChange} open={open}>
       <PopoverTrigger asChild>
         <Button variant="default" className="mt-2">
           주제 추가
@@ -224,23 +254,34 @@ function CreateBowlCTA() {
         <form onSubmit={onSubmit}>
           <fieldset>
             <div className="flex flex-col gap-1">
-              <label htmlFor="bowlName">주제 이름</label>
+              <label htmlFor="name">주제 이름</label>
               <Input
                 required
+                minLength={1}
                 maxLength={20}
-                name="bowlName"
-                id="bowlName"
+                name="name"
+                id="name"
                 placeholder="20자 이내"
               />
+              {errorMap.name.length > 0 ? (
+                <span role="alert" className="text-red-500 text-xs font-medium ml-1 mt-1">
+                  {errorMap.name}
+                </span>
+              ) : null}
             </div>
             <div className="flex flex-col gap-1 mt-2">
-              <label htmlFor="bowlDescription">주제 설명</label>
+              <label htmlFor="description">주제 설명</label>
               <Textarea
-                name="bowlDescription"
-                id="bowlDescription"
+                name="description"
+                id="description"
                 placeholder="간단한 설명을 적어보아요 (선택사항)"
                 className="resize-none"
               />
+              {errorMap.description.length > 0 ? (
+                <span role="alert" className="text-red-500 text-xs font-medium ml-1 mt-1">
+                  {errorMap.description}
+                </span>
+              ) : null}
             </div>
           </fieldset>
           <div className="flex justify-end mt-2 gap-2">

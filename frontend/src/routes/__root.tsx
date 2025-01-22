@@ -1,4 +1,5 @@
 import { createRootRoute, Outlet } from "@tanstack/react-router"
+import { Toaster } from "sonner"
 import { bootStrapPromise } from "#/lib/bootstrap"
 import {
   BowlContextProvider,
@@ -17,6 +18,7 @@ function Root() {
   const [initialBowls, initialFlakes, initialTodos] = Route.useLoaderData()
   return (
     <GlobalOutletProvider>
+      <Toaster position="bottom-center" offset="5vh" />
       <BowlContextProvider initialData={initialBowls}>
         <FlakeContextProvider initialData={initialFlakes}>
           <TodoContextProvider initialData={initialTodos}>

@@ -2,18 +2,17 @@ import * as React from "react"
 import { createStore } from "zustand"
 import { useShallow } from "zustand/shallow"
 import { useStoreWithEqualityFn } from "zustand/traditional"
-import * as model from "@/go/models"
+import { type Bowl } from "#/domain/bowl/schema"
+import { type Flake } from "#/domain/flake/schema"
+import { type Todo } from "#/domain/todo/schema"
 import { assert } from "./assert"
 
 // All database model's id is int64
 type Id = number
 
-type Bowl = model.bowls.Bowl
-
 type BowlState = {
   map: Map<Id, Bowl>
-  add: (bowl: Bowl) => void
-  update: (id: Id, update: Bowl) => void
+  upsert: (bowl: Bowl) => void
   remove: (id: Id) => void
 }
 
@@ -26,21 +25,10 @@ function createBowlStore(initialData: Bowl[]) {
   return createStore<BowlState>()((set) => {
     return {
       map,
-      add: (bowl: Bowl) => {
+      upsert: (bowl: Bowl) => {
         set((state) => {
           const newMap = new Map(state.map)
           newMap.set(bowl.id, bowl)
-          return {
-            map: newMap,
-          }
-        })
-      },
-      update: (id: Id, update: Bowl) => {
-        set((state) => {
-          const newMap = new Map(state.map)
-          const bowl = newMap.get(id)
-          assert(bowl !== undefined, `The bowl(${id.toString()}) should not be nullable`)
-          newMap.set(update.id, update)
           return {
             map: newMap,
           }
@@ -78,11 +66,9 @@ function BowlContextProvider(props: React.PropsWithChildren<{ initialData: Bowl[
   return <BowlContext.Provider value={store}>{props.children}</BowlContext.Provider>
 }
 
-type Flake = model.flakes.Flake
 type FlakeState = {
   map: Map<Id, Flake>
-  add: (flake: Flake) => void
-  update: (id: Id, update: Flake) => void
+  upsert: (flake: Flake) => void
   remove: (id: Id) => void
   removeByBowlId: (bowlId: Id) => void
 }
@@ -96,24 +82,10 @@ function createFlakeStore(initialData: Flake[]) {
   return createStore<FlakeState>()((set) => {
     return {
       map,
-      add: (flake: Flake) => {
+      upsert: (flake: Flake) => {
         set((state) => {
           const newMap = new Map(state.map)
           newMap.set(flake.id, flake)
-          return {
-            map: newMap,
-          }
-        })
-      },
-      update: (id: Id, update: Flake) => {
-        set((state) => {
-          const newMap = new Map(state.map)
-          const flake = newMap.get(id)
-          assert(
-            flake !== undefined,
-            `The flake(${id.toString()}) should not be nullable`
-          )
-          newMap.set(update.id, update)
           return {
             map: newMap,
           }
@@ -174,11 +146,9 @@ const toDateKey = (d: Date): DateKey => {
   return ret
 }
 
-type Todo = model.todos.Todo
 type TodoState = {
   map: Map<DateKey, Todo[]>
-  add: (todo: Todo) => void
-  setDone: (todo: Todo) => void
+  upsert: (todo: Todo) => void
   remove: (todo: Todo) => void
   removeByFlakeId: (flakeId: Id) => void
 }
@@ -200,43 +170,26 @@ function createTodoStore(initialData: Todo[]) {
   return createStore<TodoState>()((set) => {
     return {
       map,
-      add: (todo: Todo) => {
+      upsert: (todo: Todo) => {
         set((state) => {
           const newMap = new Map(state.map)
           const dateKey = toDateKey(todo.scheduledAt)
           if (newMap.get(dateKey) === undefined) {
             newMap.set(dateKey, [])
           }
+
           // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- Because of the initialization, We can safe get the array
-          const todoList = newMap.get(dateKey)!
-          todoList.push(todo)
-          todoList.sort((a, b) => a.id - b.id)
-          return {
-            map: newMap,
+          const list = newMap.get(dateKey)!.slice()
+          const index = list.findIndex((existingTodo) => existingTodo.id === todo.id)
+          if (index === -1) {
+            list.push(todo)
+            list.sort((a, b) => a.id - b.id)
+          } else {
+            list[index] = todo
           }
-        })
-      },
-      setDone: (todo: Todo) => {
-        set((state) => {
-          const newMap = new Map(state.map)
-          const key = toDateKey(todo.scheduledAt)
-          const todoList = newMap.get(key)
-          assert(
-            Array.isArray(todoList),
-            `There is no existing todoList when updating the todo: ${JSON.stringify(todo, null, 4)}`
-          )
-          const targetIndex = todoList.findIndex((t) => t.id === todo.id)
-          assert(
-            targetIndex !== -1,
-            `The todo: ${JSON.stringify(todo, null, 4)} is not existing in the backing array: ${todoList.join(", ")}`
-          )
-          const newTodo = new model.todos.Todo()
-          newTodo.id = todo.id
-          newTodo.flakeId = todo.flakeId
-          newTodo.done = !todo.done
-          newTodo.scheduledAt = todo.scheduledAt
-          todoList[targetIndex] = newTodo
-          newMap.set(key, todoList.slice())
+
+          newMap.set(dateKey, list)
+
           return {
             map: newMap,
           }
