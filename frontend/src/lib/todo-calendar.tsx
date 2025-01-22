@@ -15,7 +15,7 @@ function useCurrentDateContext() {
   const ctx = React.useContext(CurrentDateContext);
   if (ctx == undefined) {
     throw new Error(
-      "useCurrentDateContext should be called within CalendarProvider"
+      "useCurrentDateContext should be called within CalendarProvider",
     );
   }
   return ctx;
@@ -42,7 +42,7 @@ function useCalendarGridContext() {
   const ctx = React.useContext(CalendarGridContext);
   if (ctx == undefined) {
     throw new Error(
-      "useCalendarGridContext should be called within CalendarProvider"
+      "useCalendarGridContext should be called within CalendarProvider",
     );
   }
   return ctx;
@@ -55,14 +55,14 @@ type Props = {
 
 function CalendarProvider({ initialDate, children }: Props) {
   const [currentDate, setCurrentDate] = React.useState(
-    () => initialDate || new Date()
+    () => initialDate || new Date(),
   );
 
   const gridStart = React.useMemo(() => {
     const first = new Date(
       currentDate.getFullYear(),
       currentDate.getMonth(),
-      1
+      1,
     );
     const start = new Date(first);
     start.setDate(start.getDate() - first.getDay());
