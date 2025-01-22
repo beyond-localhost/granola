@@ -18,7 +18,8 @@ import {
   TableHeader,
   TableRow,
 } from "#/components/ui/table"
-import { type bowls, type flakes } from "@/go/models"
+import { type Bowl } from "#/domain/bowl/schema"
+import { type Flake } from "#/domain/flake/schema"
 import * as flakesService from "@/go/flakes/FlakeService"
 import { Button } from "#/components/ui/button"
 import { Popover, PopoverContent } from "#/components/ui/popover"
@@ -33,7 +34,7 @@ import {
 } from "#/components/ui/dropdown-menu"
 import { CreateFlake } from "#/domain/flake/schema"
 
-type FlakeColumn = flakes.Flake & { bowlName: string }
+type FlakeColumn = Flake & { bowlName: string }
 const flakeColumns: ColumnDef<FlakeColumn>[] = [
   {
     accessorKey: "name",
@@ -66,7 +67,7 @@ function FlakeList() {
   const removeFlake = useFlakeContext((state) => state.remove)
   const removeTodoByFlakeId = useTodoContext((state) => state.removeByFlakeId)
 
-  const onRemoveFlakeClick = async (flake: flakes.Flake) => {
+  const onRemoveFlakeClick = async (flake: Flake) => {
     await flakesService.DeleteById(flake.id)
 
     removeTodoByFlakeId(flake.id)
@@ -191,7 +192,7 @@ function FlakeList() {
 }
 
 type CreateFlakeCTAProps = {
-  bowls: bowls.Bowl[]
+  bowls: Bowl[]
 }
 
 const defaultErrorMap = {

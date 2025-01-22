@@ -19,7 +19,7 @@ import {
   TableHeader,
   TableRow,
 } from "#/components/ui/table"
-import { type bowls } from "@/go/models"
+import { type Bowl, CreateBowl } from "#/domain/bowl/schema"
 import * as bowlsService from "@/go/bowls/BowlsService"
 import { Button } from "#/components/ui/button"
 import { Popover, PopoverContent } from "#/components/ui/popover"
@@ -32,9 +32,8 @@ import {
   DropdownMenuLabel,
   DropdownMenuTrigger,
 } from "#/components/ui/dropdown-menu"
-import { CreateBowl } from "#/domain/bowl/schema"
 
-const bowlColumns: ColumnDef<bowls.Bowl>[] = [
+const bowlColumns: ColumnDef<Bowl>[] = [
   {
     accessorKey: "name",
     header: "이름",
@@ -59,7 +58,7 @@ function BowlList() {
   const removeFlakeByBowlId = useFlakeContext((state) => state.removeByBowlId)
   const removeTodoByFlakeId = useTodoContext((state) => state.removeByFlakeId)
 
-  const onRemoveBowlClick = (bowl: bowls.Bowl) => async () => {
+  const onRemoveBowlClick = (bowl: Bowl) => async () => {
     try {
       await bowlsService.DeleteById(bowl.id)
     } catch (reason: unknown) {

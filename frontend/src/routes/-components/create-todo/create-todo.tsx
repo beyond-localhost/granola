@@ -9,7 +9,8 @@ import { toDateKey, useBowlContext, useFlakeContext, useTodoContext } from "#/li
 import { Popover, PopoverContent, PopoverTrigger } from "#/components/ui/popover"
 import { Button } from "#/components/ui/button"
 import { Command, CommandInput, CommandItem, CommandList } from "#/components/ui/command"
-import { type bowls, type flakes } from "@/go/models"
+import { type Bowl } from "#/domain/bowl/schema"
+import { type Flake } from "#/domain/flake/schema"
 import * as todosService from "@/go/todos/TodosService"
 import { assert } from "#/lib/assert"
 import { Calendar } from "#/components/ui/calendar"
@@ -22,8 +23,8 @@ type CreateTodoProps = {
 
 function CreateTodo({ onClose, initialDate }: CreateTodoProps) {
   const [open, setOpen] = React.useState(true)
-  const [bowl, setBowl] = React.useState<bowls.Bowl>()
-  const [flake, setFlake] = React.useState<flakes.Flake>()
+  const [bowl, setBowl] = React.useState<Bowl>()
+  const [flake, setFlake] = React.useState<Flake>()
   const [date, setDate] = React.useState<Date>(() => initialDate ?? new Date())
 
   const addTodo = useTodoContext((state) => state.upsert)
@@ -161,8 +162,8 @@ function SelectBowl({
   currentBowl,
   setBowl,
 }: {
-  currentBowl?: bowls.Bowl
-  setBowl: (bowl: bowls.Bowl) => void
+  currentBowl?: Bowl
+  setBowl: (bowl: Bowl) => void
 }) {
   const bowls = useBowlContext((state) => Array.from(state.map.values()))
   const [open, setOpen] = React.useState(false)
@@ -215,8 +216,8 @@ function SelectFlake({
   setFlake,
 }: {
   currentBowlId: number
-  currentFlake?: flakes.Flake
-  setFlake: (flake: flakes.Flake) => void
+  currentFlake?: Flake
+  setFlake: (flake: Flake) => void
 }) {
   const [open, setOpen] = React.useState(false)
   const flakes = useFlakeContext((state) => {
