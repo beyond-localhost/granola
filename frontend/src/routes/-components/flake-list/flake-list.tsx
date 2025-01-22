@@ -1,13 +1,13 @@
-import * as React from "react";
+import * as React from "react"
 
-import { useBowlContext, useFlakeContext, useTodoContext } from "#/lib/state";
+import { useBowlContext, useFlakeContext, useTodoContext } from "#/lib/state"
 import {
   ColumnDef,
   useReactTable,
   getCoreRowModel,
   flexRender,
   getPaginationRowModel,
-} from "@tanstack/react-table";
+} from "@tanstack/react-table"
 import {
   Table,
   TableBody,
@@ -15,27 +15,27 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "#/components/ui/table";
+} from "#/components/ui/table"
 
-import { bowls, flakes } from "@/go/models";
+import { bowls, flakes } from "@/go/models"
 
-import * as flakesService from "@/go/flakes/FlakeService";
-import { Button } from "#/components/ui/button";
-import { Popover, PopoverContent } from "#/components/ui/popover";
-import { PopoverTrigger } from "@radix-ui/react-popover";
-import { Input } from "#/components/ui/input";
-import { Textarea } from "#/components/ui/textarea";
-import { assert } from "#/lib/assert";
-import { MoreHorizontal, Trash2 } from "lucide-react";
+import * as flakesService from "@/go/flakes/FlakeService"
+import { Button } from "#/components/ui/button"
+import { Popover, PopoverContent } from "#/components/ui/popover"
+import { PopoverTrigger } from "@radix-ui/react-popover"
+import { Input } from "#/components/ui/input"
+import { Textarea } from "#/components/ui/textarea"
+import { assert } from "#/lib/assert"
+import { MoreHorizontal, Trash2 } from "lucide-react"
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuTrigger,
-} from "#/components/ui/dropdown-menu";
+} from "#/components/ui/dropdown-menu"
 
-type FlakeColumn = flakes.Flake & { bowlName: string };
+type FlakeColumn = flakes.Flake & { bowlName: string }
 const flakeColumns: ColumnDef<FlakeColumn>[] = [
   {
     accessorKey: "name",
@@ -53,35 +53,35 @@ const flakeColumns: ColumnDef<FlakeColumn>[] = [
     id: "actions",
     cell: () => <MoreHorizontal />,
   },
-];
+]
 
 function FlakeList() {
-  const bowls = useBowlContext((state) => state.map);
-  const flakes = useFlakeContext((state) => state.map);
+  const bowls = useBowlContext((state) => state.map)
+  const flakes = useFlakeContext((state) => state.map)
   const data = React.useMemo<FlakeColumn[]>(() => {
     return Array.from(flakes.values()).map((flake) => {
-      const bowl = bowls.get(flake.bowlId);
+      const bowl = bowls.get(flake.bowlId)
       // assert(bowl !== undefined, `bowl must be defined`);
-      return { ...flake, bowlName: bowl?.name ?? "알 수 없음" };
-    });
-  }, [bowls, flakes]);
+      return { ...flake, bowlName: bowl?.name ?? "알 수 없음" }
+    })
+  }, [bowls, flakes])
 
-  const removeFlake = useFlakeContext((state) => state.remove);
-  const removeTodoByFlakeId = useTodoContext((state) => state.removeByFlakeId);
+  const removeFlake = useFlakeContext((state) => state.remove)
+  const removeTodoByFlakeId = useTodoContext((state) => state.removeByFlakeId)
 
   const onRemoveFlakeClick = (flake: flakes.Flake) => async () => {
-    await flakesService.DeleteById(flake.id);
+    await flakesService.DeleteById(flake.id)
 
-    removeTodoByFlakeId(flake.id);
-    removeFlake(flake.id);
-  };
+    removeTodoByFlakeId(flake.id)
+    removeFlake(flake.id)
+  }
 
   const t = useReactTable({
     data: data,
     columns: flakeColumns,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
-  });
+  })
 
   return (
     <div>
@@ -102,29 +102,25 @@ function FlakeList() {
                               header.getContext()
                             )}
                       </TableHead>
-                    );
+                    )
                   })}
                 </TableRow>
-              );
+              )
             })}
           </TableHeader>
           <TableBody>
             {t.getRowModel().rows.length > 0 ? (
               t.getRowModel().rows.map((row) => {
-                const flake = row.original;
+                const flake = row.original
                 return (
-                  <TableRow
-                    key={row.id}
-                    data-state={row.getIsSelected() && "selected"}
-                  >
+                  <TableRow key={row.id} data-state={row.getIsSelected() && "selected"}>
                     {row.getVisibleCells().map((cell) => {
-                      const isLast =
-                        cell.column.getIndex() === flakeColumns.length - 1;
+                      const isLast = cell.column.getIndex() === flakeColumns.length - 1
 
                       const cellNode = flexRender(
                         cell.column.columnDef.cell,
                         cell.getContext()
-                      );
+                      )
 
                       return (
                         <TableCell key={cell.id}>
@@ -141,9 +137,7 @@ function FlakeList() {
                                     추가 액션
                                   </span>
                                 </DropdownMenuLabel>
-                                <DropdownMenuItem
-                                  onClick={onRemoveFlakeClick(flake)}
-                                >
+                                <DropdownMenuItem onClick={onRemoveFlakeClick(flake)}>
                                   <Trash2 />
                                   <span className="ml-px select-none cursor-pointer">
                                     이 덩어리 삭제
@@ -155,10 +149,10 @@ function FlakeList() {
                             cellNode
                           )}
                         </TableCell>
-                      );
+                      )
                     })}
                   </TableRow>
-                );
+                )
               })
             ) : (
               <TableRow>
@@ -180,58 +174,51 @@ function FlakeList() {
           >
             이전
           </Button>
-          <Button
-            onClick={() => t.nextPage()}
-            size="sm"
-            disabled={!t.getCanNextPage()}
-          >
+          <Button onClick={() => t.nextPage()} size="sm" disabled={!t.getCanNextPage()}>
             다음
           </Button>
         </div>
       </div>
     </div>
-  );
+  )
 }
 
 type CreateFlakeCTAProps = {
-  bowls: bowls.Bowl[];
-};
+  bowls: bowls.Bowl[]
+}
 function CreateFlakeCTA({ bowls }: CreateFlakeCTAProps) {
-  const [open, setOpen] = React.useState(false);
-  const [pending, startTransition] = React.useTransition();
-  const addFlake = useFlakeContext((state) => state.add);
+  const [open, setOpen] = React.useState(false)
+  const [pending, startTransition] = React.useTransition()
+  const addFlake = useFlakeContext((state) => state.add)
 
   const onSubmit: React.FormEventHandler<HTMLFormElement> = (event) => {
-    event.preventDefault();
+    event.preventDefault()
     startTransition(() => {
-      const formData = new FormData(event.currentTarget);
-      const flakeName = formData.get("flakeName");
-      const flakeDescription = formData.get("flakeDescription") || "";
-      let bowlId: FormDataEntryValue | number = formData.get("bowlId") || "";
+      const formData = new FormData(event.currentTarget)
+      const flakeName = formData.get("flakeName")
+      const flakeDescription = formData.get("flakeDescription") || ""
+      let bowlId: FormDataEntryValue | number = formData.get("bowlId") || ""
 
       assert(
         typeof bowlId === "string",
         `bowlId must be a string but got ${typeof bowlId}`
-      );
+      )
 
-      bowlId = Number.parseInt(bowlId, 10);
-      assert(Number.isNaN(bowlId) === false, `bowlId must be a valid number`);
+      bowlId = Number.parseInt(bowlId, 10)
+      assert(Number.isNaN(bowlId) === false, `bowlId must be a valid number`)
 
       assert(
         typeof flakeName === "string" && flakeName.length <= 20,
         `bowlName must be a string with length <= 20`
-      );
-      assert(
-        typeof flakeDescription === "string",
-        `bowlDescription must be a string`
-      );
+      )
+      assert(typeof flakeDescription === "string", `bowlDescription must be a string`)
 
       flakesService
         .Create(flakeName, flakeDescription, bowlId)
         .then(addFlake)
-        .then(() => setOpen(false));
-    });
-  };
+        .then(() => setOpen(false))
+    })
+  }
 
   return (
     <Popover onOpenChange={setOpen} open={open}>
@@ -251,7 +238,7 @@ function CreateFlakeCTA({ bowls }: CreateFlakeCTAProps) {
                     <option key={bowl.id} value={bowl.id}>
                       {bowl.name}
                     </option>
-                  );
+                  )
                 })}
               </select>
             </div>
@@ -297,7 +284,7 @@ function CreateFlakeCTA({ bowls }: CreateFlakeCTAProps) {
         </form>
       </PopoverContent>
     </Popover>
-  );
+  )
 }
 
-export { FlakeList };
+export { FlakeList }

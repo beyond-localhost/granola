@@ -1,22 +1,22 @@
-import { createRootRoute, Outlet } from "@tanstack/react-router";
+import { createRootRoute, Outlet } from "@tanstack/react-router"
 
-import { bootStrapPromise } from "#/lib/bootstrap";
+import { bootStrapPromise } from "#/lib/bootstrap"
 import {
   BowlContextProvider,
   FlakeContextProvider,
   TodoContextProvider,
-} from "#/lib/state";
+} from "#/lib/state"
 
-import { GlobalOutletProvider, GlobalOutlet } from "#/components/portal";
-import { NavigationCommand } from "./-components/navigation-command/navigation-command";
+import { GlobalOutletProvider, GlobalOutlet } from "#/components/portal"
+import { NavigationCommand } from "./-components/navigation-command/navigation-command"
 
 export const Route = createRootRoute({
   loader: () => bootStrapPromise,
   component: Root,
-});
+})
 
 function Root() {
-  const [initialBowls, initialFlakes, initialTodos] = Route.useLoaderData();
+  const [initialBowls, initialFlakes, initialTodos] = Route.useLoaderData()
   return (
     <GlobalOutletProvider>
       <BowlContextProvider initialData={initialBowls}>
@@ -29,5 +29,5 @@ function Root() {
         </FlakeContextProvider>
       </BowlContextProvider>
     </GlobalOutletProvider>
-  );
+  )
 }

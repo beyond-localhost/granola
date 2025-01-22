@@ -1,30 +1,24 @@
-function debounce<TFunc extends (...args: any[]) => any>(
-  func: TFunc,
-  delayMS: number
-) {
-  let timeout: ReturnType<typeof globalThis.setTimeout> | null = null;
+function debounce<TFunc extends (...args: any[]) => any>(func: TFunc, delayMS: number) {
+  let timeout: ReturnType<typeof globalThis.setTimeout> | null = null
 
-  function debounced(
-    this: ThisParameterType<TFunc>,
-    ...args: Parameters<TFunc>
-  ) {
+  function debounced(this: ThisParameterType<TFunc>, ...args: Parameters<TFunc>) {
     if (timeout) {
-      clearTimeout(timeout);
+      clearTimeout(timeout)
     }
     timeout = setTimeout(() => {
-      func.apply(this, args);
-      timeout = null;
-    }, delayMS);
+      func.apply(this, args)
+      timeout = null
+    }, delayMS)
   }
 
   debounced.cancel = () => {
     if (timeout) {
-      clearTimeout(timeout);
-      timeout = null;
+      clearTimeout(timeout)
+      timeout = null
     }
-  };
+  }
 
-  return debounced;
+  return debounced
 }
 
-export { debounce };
+export { debounce }

@@ -1,58 +1,56 @@
-import * as React from "react";
-import ReactDOM from "react-dom";
-import { Command, CommandItem, CommandList } from "#/components/ui/command";
-import { Transition, TransitionChild } from "@headlessui/react";
-import { useGlobalOutletSetter } from "#/components/portal";
-import { useScrollLock } from "#/lib/scroll-lock";
-import { cn } from "#/lib/utils";
-import { Link } from "@tanstack/react-router";
-import { Calendar, Home } from "lucide-react";
+import * as React from "react"
+import ReactDOM from "react-dom"
+import { Command, CommandItem, CommandList } from "#/components/ui/command"
+import { Transition, TransitionChild } from "@headlessui/react"
+import { useGlobalOutletSetter } from "#/components/portal"
+import { useScrollLock } from "#/lib/scroll-lock"
+import { cn } from "#/lib/utils"
+import { Link } from "@tanstack/react-router"
+import { Calendar, Home } from "lucide-react"
 
-const NAVIGAION_COMMAND_ID = "navigation-command";
+const NAVIGAION_COMMAND_ID = "navigation-command"
 
 function NavigationCommand() {
-  const setter = useGlobalOutletSetter();
+  const setter = useGlobalOutletSetter()
   React.useEffect(() => {
     function handleKeydown(event: KeyboardEvent) {
       if (event.key === "/") {
-        event.preventDefault();
+        event.preventDefault()
         setter.append(
           NAVIGAION_COMMAND_ID,
-          <NavigationCommandPortal
-            onClose={() => setter.remove(NAVIGAION_COMMAND_ID)}
-          />
-        );
+          <NavigationCommandPortal onClose={() => setter.remove(NAVIGAION_COMMAND_ID)} />
+        )
       }
     }
-    window.addEventListener("keydown", handleKeydown);
+    window.addEventListener("keydown", handleKeydown)
     return () => {
-      window.removeEventListener("keydown", handleKeydown);
-    };
-  }, [setter]);
+      window.removeEventListener("keydown", handleKeydown)
+    }
+  }, [setter])
 
-  return null;
+  return null
 }
 
 type NavigationCommandPortalProps = {
-  onClose: () => void;
-};
+  onClose: () => void
+}
 
 function NavigationCommandPortal({ onClose }: NavigationCommandPortalProps) {
-  const [open, setOpen] = React.useState(true);
-  useScrollLock({ open: true });
+  const [open, setOpen] = React.useState(true)
+  useScrollLock({ open: true })
 
   React.useEffect(() => {
     function handleKeydown(event: KeyboardEvent) {
       if (event.key === "Escape") {
-        event.preventDefault();
-        setOpen(false);
+        event.preventDefault()
+        setOpen(false)
       }
     }
-    window.addEventListener("keydown", handleKeydown);
+    window.addEventListener("keydown", handleKeydown)
     return () => {
-      window.removeEventListener("keydown", handleKeydown);
-    };
-  }, [setOpen]);
+      window.removeEventListener("keydown", handleKeydown)
+    }
+  }, [setOpen])
 
   return ReactDOM.createPortal(
     <Transition show={open} afterLeave={onClose} appear={true}>
@@ -81,7 +79,7 @@ function NavigationCommandPortal({ onClose }: NavigationCommandPortalProps) {
             <CommandItem className="p-4 font-medium text-xl" asChild>
               <Link
                 onClick={() => {
-                  setOpen(false);
+                  setOpen(false)
                 }}
                 to="/"
               >
@@ -92,7 +90,7 @@ function NavigationCommandPortal({ onClose }: NavigationCommandPortalProps) {
             <CommandItem className="p-4 font-medium text-xl" asChild>
               <Link
                 onClick={() => {
-                  setOpen(false);
+                  setOpen(false)
                 }}
                 to="/calendar"
               >
@@ -105,7 +103,7 @@ function NavigationCommandPortal({ onClose }: NavigationCommandPortalProps) {
       </TransitionChild>
     </Transition>,
     document.body
-  );
+  )
 }
 
-export { NavigationCommand };
+export { NavigationCommand }

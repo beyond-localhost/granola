@@ -1,10 +1,10 @@
-import * as React from "react";
-import * as ContextMenuPrimitive from "@radix-ui/react-context-menu";
+import * as React from "react"
+import * as ContextMenuPrimitive from "@radix-ui/react-context-menu"
 
-import { cn } from "#/lib/utils";
+import { cn } from "#/lib/utils"
 
-const ContextMenu = ContextMenuPrimitive.Root;
-const ContextMenuTrigger = ContextMenuPrimitive.Trigger;
+const ContextMenu = ContextMenuPrimitive.Root
+const ContextMenuTrigger = ContextMenuPrimitive.Trigger
 
 function ContextMenuContent({
   className,
@@ -20,7 +20,7 @@ function ContextMenuContent({
         {...props}
       />
     </ContextMenuPrimitive.Portal>
-  );
+  )
 }
 
 function ContextMenuItem({
@@ -35,7 +35,7 @@ function ContextMenuItem({
       )}
       {...props}
     />
-  );
+  )
 }
 
-export { ContextMenu, ContextMenuTrigger, ContextMenuContent, ContextMenuItem };
+export { ContextMenu, ContextMenuTrigger, ContextMenuContent, ContextMenuItem }

@@ -1,38 +1,32 @@
-import * as React from "react";
+import * as React from "react"
 
 import {
   useCalendarGridContext,
   useCurrentDateContext,
   type CalendarCell,
-} from "#/lib/todo-calendar";
+} from "#/lib/todo-calendar"
 
-import { cn } from "#/lib/utils";
-import { toDateKey, useFlakeContext, useTodoContext } from "#/lib/state";
-import { assert } from "#/lib/assert";
-import { todos } from "@/go/models";
-import * as todosService from "@/go/todos/TodosService";
-import {
-  ChevronLeft,
-  ChevronRight,
-  Trash2,
-  CircleCheck,
-  Undo2,
-} from "lucide-react";
-import { useGlobalOutletSetter } from "#/components/portal";
-import { CREATE_TODO_ID, CreateTodo } from "../create-todo/create-todo";
-import { debounce } from "#/lib/debounce";
+import { cn } from "#/lib/utils"
+import { toDateKey, useFlakeContext, useTodoContext } from "#/lib/state"
+import { assert } from "#/lib/assert"
+import { todos } from "@/go/models"
+import * as todosService from "@/go/todos/TodosService"
+import { ChevronLeft, ChevronRight, Trash2, CircleCheck, Undo2 } from "lucide-react"
+import { useGlobalOutletSetter } from "#/components/portal"
+import { CREATE_TODO_ID, CreateTodo } from "../create-todo/create-todo"
+import { debounce } from "#/lib/debounce"
 
 import {
   ContextMenu,
   ContextMenuContent,
   ContextMenuItem,
   ContextMenuTrigger,
-} from "#/components/ui/context-menu";
+} from "#/components/ui/context-menu"
 
 function CalendarHeader() {
-  const { next, prev, currentDate, now } = useCurrentDateContext();
-  const year = currentDate.getFullYear();
-  const month = currentDate.getMonth() + 1;
+  const { next, prev, currentDate, now } = useCurrentDateContext()
+  const year = currentDate.getFullYear()
+  const month = currentDate.getMonth() + 1
 
   return (
     <div className="w-full border-b border-b-zinc-300 pt-3 h-[84px]">
@@ -67,7 +61,7 @@ function CalendarHeader() {
         <CalendarDays />
       </div>
     </div>
-  );
+  )
 }
 
 function CalendarDays() {
@@ -81,11 +75,11 @@ function CalendarDays() {
       <div>금</div>
       <div className="text-zinc-500">토</div>
     </div>
-  );
+  )
 }
 
 function CalendarBody() {
-  const grid = useCalendarGridContext();
+  const grid = useCalendarGridContext()
   return (
     <div className="grid grid-cols-7 grid-rows-6 justify-items-end h-[calc(100%-84px)]">
       {grid.map((week, rowIndex, { length: rowLength }) => {
@@ -106,61 +100,61 @@ function CalendarBody() {
                 >
                   <CalendarCell cell={date} />
                 </div>
-              );
+              )
             })}
           </React.Fragment>
-        );
+        )
       })}
     </div>
-  );
+  )
 }
 
 function CalendarCell({ cell }: { cell: CalendarCell }) {
-  const today = React.useRef(new Date()).current;
-  const containerRef = React.useRef<HTMLDivElement>(null);
-  const itemAreaRef = React.useRef<HTMLUListElement>(null);
+  const today = React.useRef(new Date()).current
+  const containerRef = React.useRef<HTMLDivElement>(null)
+  const itemAreaRef = React.useRef<HTMLUListElement>(null)
   const todoList = useTodoContext((state) => {
-    return state.map.get(cell.key) || [];
-  });
+    return state.map.get(cell.key) || []
+  })
 
-  const currentDateKey = toDateKey(today);
-  const sameDay = currentDateKey === cell.key;
-  const setter = useGlobalOutletSetter();
+  const currentDateKey = toDateKey(today)
+  const sameDay = currentDateKey === cell.key
+  const setter = useGlobalOutletSetter()
 
-  const [renderThreshold, setRenderThreshold] = React.useState(todoList.length);
+  const [renderThreshold, setRenderThreshold] = React.useState(todoList.length)
 
   const calculateThreshold = React.useCallback(() => {
-    const itemArea = itemAreaRef.current;
-    const container = containerRef.current;
+    const itemArea = itemAreaRef.current
+    const container = containerRef.current
 
-    if (!itemArea || !container) return;
+    if (!itemArea || !container) return
 
-    const offset = 24;
+    const offset = 24
 
-    const containerVisibleHeight = container.clientHeight - offset;
-    const itemAreaFullHeight = itemArea.scrollHeight;
+    const containerVisibleHeight = container.clientHeight - offset
+    const itemAreaFullHeight = itemArea.scrollHeight
 
-    const isOverflowing = itemAreaFullHeight > containerVisibleHeight;
+    const isOverflowing = itemAreaFullHeight > containerVisibleHeight
 
     if (!isOverflowing) {
-      setRenderThreshold(todoList.length);
+      setRenderThreshold(todoList.length)
     } else {
-      setRenderThreshold(Math.min(2, todoList.length));
+      setRenderThreshold(Math.min(2, todoList.length))
     }
-  }, [todoList.length]);
+  }, [todoList.length])
 
   React.useEffect(() => {
-    calculateThreshold();
-  }, [calculateThreshold]);
+    calculateThreshold()
+  }, [calculateThreshold])
 
   React.useEffect(() => {
-    const handleResize = debounce(calculateThreshold, 200);
-    window.addEventListener("resize", handleResize);
+    const handleResize = debounce(calculateThreshold, 200)
+    window.addEventListener("resize", handleResize)
     return () => {
-      handleResize.cancel();
-      window.removeEventListener("resize", handleResize);
-    };
-  }, [calculateThreshold]);
+      handleResize.cancel()
+      window.removeEventListener("resize", handleResize)
+    }
+  }, [calculateThreshold])
 
   function onDoubleClick() {
     setter.append(
@@ -169,7 +163,7 @@ function CalendarCell({ cell }: { cell: CalendarCell }) {
         initialDate={cell.rawDate}
         onClose={() => setter.remove(CREATE_TODO_ID)}
       />
-    );
+    )
   }
 
   return (
@@ -182,8 +176,7 @@ function CalendarCell({ cell }: { cell: CalendarCell }) {
         className={cn("text-right pr-1 text-md", {
           "text-neutral-400": cell.monthStatus !== "current",
           "text-neutral-500":
-            cell.monthStatus === "current" &&
-            (cell.day === 0 || cell.day === 6),
+            cell.monthStatus === "current" && (cell.day === 0 || cell.day === 6),
           "flex gap-[2px] items-center justify-end": sameDay,
         })}
       >
@@ -205,7 +198,7 @@ function CalendarCell({ cell }: { cell: CalendarCell }) {
             <li key={todo.id} className="mt-[2px]">
               <TodoItem todo={todo} />
             </li>
-          );
+          )
         })}
         {renderThreshold < todoList.length && (
           <li className="text-center text-sm text-blue-500 absolute bottom-0 left-0 w-full h-[24px] bg-white">
@@ -214,30 +207,30 @@ function CalendarCell({ cell }: { cell: CalendarCell }) {
         )}
       </ul>
     </div>
-  );
+  )
 }
 
 function TodoItem({ todo }: { todo: todos.Todo }) {
   const flake = useFlakeContext((state) => {
-    const flake = state.map.get(todo.flakeId);
-    assert(flake != undefined, `Flake should not be nullish`);
-    return flake;
-  });
+    const flake = state.map.get(todo.flakeId)
+    assert(flake != undefined, `Flake should not be nullish`)
+    return flake
+  })
 
-  const setDone = useTodoContext((state) => state.setDone);
-  const removeTodo = useTodoContext((state) => state.remove);
+  const setDone = useTodoContext((state) => state.setDone)
+  const removeTodo = useTodoContext((state) => state.remove)
 
   const onDeleteSelect = async () => {
-    await todosService.Remove(todo.id);
-    removeTodo(todo);
-  };
+    await todosService.Remove(todo.id)
+    removeTodo(todo)
+  }
 
   const onDoneSelect = async () => {
-    await todosService.SetDone(todo.id);
-    setDone(todo);
-  };
-  const doneIcon = todo.done ? <Undo2 /> : <CircleCheck />;
-  const doneDisplayMessage = todo.done ? "되돌리기" : "완료하기";
+    await todosService.SetDone(todo.id)
+    setDone(todo)
+  }
+  const doneIcon = todo.done ? <Undo2 /> : <CircleCheck />
+  const doneDisplayMessage = todo.done ? "되돌리기" : "완료하기"
 
   return (
     <ContextMenu>
@@ -257,7 +250,7 @@ function TodoItem({ todo }: { todo: todos.Todo }) {
         </ContextMenuItem>
       </ContextMenuContent>
     </ContextMenu>
-  );
+  )
 }
 
-export { CalendarDays, CalendarHeader, CalendarBody };
+export { CalendarDays, CalendarHeader, CalendarBody }

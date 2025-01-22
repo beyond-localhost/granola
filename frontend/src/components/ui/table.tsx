@@ -1,26 +1,21 @@
-import * as React from "react";
+import * as React from "react"
 
-import { cn } from "#/lib/utils";
+import { cn } from "#/lib/utils"
 
 function Table({ className, ...props }: React.ComponentProps<"table">) {
   return (
     <div className="relative w-full overflow-auto">
-      <table
-        className={cn("w-full caption-bottom text-sm", className)}
-        {...props}
-      />
+      <table className={cn("w-full caption-bottom text-sm", className)} {...props} />
     </div>
-  );
+  )
 }
 
 function TableHeader({ className, ...props }: React.ComponentProps<"thead">) {
-  return <thead className={cn("[&_tr]:border-b", className)} {...props} />;
+  return <thead className={cn("[&_tr]:border-b", className)} {...props} />
 }
 
 function TableBody({ className, ...props }: React.ComponentProps<"tbody">) {
-  return (
-    <tbody className={cn("[&_tr:last-child]:border-0", className)} {...props} />
-  );
+  return <tbody className={cn("[&_tr:last-child]:border-0", className)} {...props} />
 }
 
 function TableRow({ className, ...props }: React.ComponentProps<"tr">) {
@@ -32,7 +27,7 @@ function TableRow({ className, ...props }: React.ComponentProps<"tr">) {
       )}
       {...props}
     />
-  );
+  )
 }
 
 function TableHead({ className, ...props }: React.ComponentProps<"th">) {
@@ -44,7 +39,7 @@ function TableHead({ className, ...props }: React.ComponentProps<"th">) {
       )}
       {...props}
     />
-  );
+  )
 }
 
 function TableCell({ className, ...props }: React.ComponentProps<"td">) {
@@ -56,7 +51,7 @@ function TableCell({ className, ...props }: React.ComponentProps<"td">) {
       )}
       {...props}
     />
-  );
+  )
 }
 
-export { Table, TableHeader, TableBody, TableHead, TableRow, TableCell };
+export { Table, TableHeader, TableBody, TableHead, TableRow, TableCell }

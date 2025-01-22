@@ -8,7 +8,10 @@
     "dev": "vite",
     "build": "npm run test && vite build",
     "preview": "vite preview",
-    "test": "tsc"
+    "test": "tsc",
+    "lint": "eslint ./src/**",
+    "format": "prettier -w ./src/**",
+    "format-lint": "prettier --check ./src/**"
   },
   "dependencies": {
     "@headlessui/react": "^2.2.0",
