@@ -68,7 +68,14 @@ function FlakeList() {
   const removeTodoByFlakeId = useTodoContext((state) => state.removeByFlakeId)
 
   const onRemoveFlakeClick = async (flake: Flake) => {
-    await flakesService.DeleteById(flake.id)
+    try {
+      await flakesService.DeleteById(flake.id)
+    } catch (error: unknown) {
+      toast.error(`할 일을 지우는데 실패했습니다. ${String(error)}`, {
+        className: "text-red-500",
+      })
+      return
+    }
 
     removeTodoByFlakeId(flake.id)
     removeFlake(flake.id)
