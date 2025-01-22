@@ -1,14 +1,15 @@
-import * as React from "react";
-import ReactDOM from "react-dom";
-
-import { useBowlContext, useFlakeContext, useTodoContext } from "#/lib/state";
+import * as React from "react"
+import * as ReactDOM from "react-dom"
 import {
-  ColumnDef,
+  type ColumnDef,
   useReactTable,
   getCoreRowModel,
   flexRender,
   getPaginationRowModel,
-} from "@tanstack/react-table";
+} from "@tanstack/react-table"
+import { PopoverTrigger } from "@radix-ui/react-popover"
+import { MoreHorizontal, Trash2 } from "lucide-react"
+import { useBowlContext, useFlakeContext, useTodoContext } from "#/lib/state"
 import {
   Table,
   TableBody,
@@ -16,24 +17,21 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "#/components/ui/table";
-
-import { bowls } from "@/go/models";
-import * as bowlsService from "@/go/bowls/BowlsService";
-import { Button } from "#/components/ui/button";
-import { Popover, PopoverContent } from "#/components/ui/popover";
-import { PopoverTrigger } from "@radix-ui/react-popover";
-import { Input } from "#/components/ui/input";
-import { Textarea } from "#/components/ui/textarea";
-import { assert } from "#/lib/assert";
-import { MoreHorizontal, Trash2 } from "lucide-react";
+} from "#/components/ui/table"
+import { type bowls } from "@/go/models"
+import * as bowlsService from "@/go/bowls/BowlsService"
+import { Button } from "#/components/ui/button"
+import { Popover, PopoverContent } from "#/components/ui/popover"
+import { Input } from "#/components/ui/input"
+import { Textarea } from "#/components/ui/textarea"
+import { assert } from "#/lib/assert"
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuTrigger,
-} from "#/components/ui/dropdown-menu";
+} from "#/components/ui/dropdown-menu"
 
 const bowlColumns: ColumnDef<bowls.Bowl>[] = [
   {
@@ -48,39 +46,39 @@ const bowlColumns: ColumnDef<bowls.Bowl>[] = [
     id: "actions",
     cell: () => <MoreHorizontal />,
   },
-];
+]
 
 function BowlList() {
   const bowls = useBowlContext((state) => {
-    return Array.from(state.map).map(([_, bowl]) => bowl);
-  });
-  const removeBowl = useBowlContext((state) => state.remove);
+    return Array.from(state.map).map(([_, bowl]) => bowl)
+  })
+  const removeBowl = useBowlContext((state) => state.remove)
 
-  const flakes = useFlakeContext((state) => state.map);
-  const removeFlakeByBowlId = useFlakeContext((state) => state.removeByBowlId);
-  const removeTodoByFlakeId = useTodoContext((state) => state.removeByFlakeId);
+  const flakes = useFlakeContext((state) => state.map)
+  const removeFlakeByBowlId = useFlakeContext((state) => state.removeByBowlId)
+  const removeTodoByFlakeId = useTodoContext((state) => state.removeByFlakeId)
 
   const onRemoveBowlClick = (bowl: bowls.Bowl) => async () => {
-    await bowlsService.DeleteById(bowl.id);
+    await bowlsService.DeleteById(bowl.id)
 
     const filteredFlakes = Array.from(flakes).filter(
       ([_, flake]) => flake.bowlId === bowl.id
-    );
+    )
     for (const [_, flake] of filteredFlakes) {
       ReactDOM.flushSync(() => {
-        removeTodoByFlakeId(flake.id);
-        removeFlakeByBowlId(bowl.id);
-      });
+        removeTodoByFlakeId(flake.id)
+        removeFlakeByBowlId(bowl.id)
+      })
     }
-    removeBowl(bowl.id);
-  };
+    removeBowl(bowl.id)
+  }
 
   const t = useReactTable({
     data: bowls,
     columns: bowlColumns,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
-  });
+  })
 
   return (
     <div>
@@ -101,29 +99,25 @@ function BowlList() {
                               header.getContext()
                             )}
                       </TableHead>
-                    );
+                    )
                   })}
                 </TableRow>
-              );
+              )
             })}
           </TableHeader>
           <TableBody>
             {t.getRowModel().rows.length > 0 ? (
               t.getRowModel().rows.map((row) => {
-                const bowl = row.original;
+                const bowl = row.original
                 return (
-                  <TableRow
-                    key={row.id}
-                    data-state={row.getIsSelected() && "selected"}
-                  >
+                  <TableRow key={row.id} data-state={row.getIsSelected() && "selected"}>
                     {row.getVisibleCells().map((cell) => {
-                      const isLast =
-                        cell.column.getIndex() === bowlColumns.length - 1;
+                      const isLast = cell.column.getIndex() === bowlColumns.length - 1
 
                       const cellNode = flexRender(
                         cell.column.columnDef.cell,
                         cell.getContext()
-                      );
+                      )
 
                       return (
                         <TableCell key={cell.id}>
@@ -140,9 +134,7 @@ function BowlList() {
                                     추가 액션
                                   </span>
                                 </DropdownMenuLabel>
-                                <DropdownMenuItem
-                                  onClick={onRemoveBowlClick(bowl)}
-                                >
+                                <DropdownMenuItem onClick={onRemoveBowlClick(bowl)}>
                                   <Trash2 />
                                   <span className="ml-px select-none cursor-pointer">
                                     이 주제 삭제
@@ -154,16 +146,14 @@ function BowlList() {
                             cellNode
                           )}
                         </TableCell>
-                      );
+                      )
                     })}
                   </TableRow>
-                );
+                )
               })
             ) : (
               <TableRow>
-                <TableCell colSpan={bowlColumns.length}>
-                  등록된 주제가 없습니다
-                </TableCell>
+                <TableCell colSpan={bowlColumns.length}>등록된 주제가 없습니다</TableCell>
               </TableRow>
             )}
           </TableBody>
@@ -173,14 +163,18 @@ function BowlList() {
         <CreateBowlCTA />
         <div className="flex gap-1">
           <Button
-            onClick={() => t.previousPage()}
+            onClick={() => {
+              t.previousPage()
+            }}
             size="sm"
             disabled={!t.getCanPreviousPage()}
           >
             이전
           </Button>
           <Button
-            onClick={() => t.nextPage()}
+            onClick={() => {
+              t.nextPage()
+            }}
             size="sm"
             disabled={!t.getCanNextPage()}
           >
@@ -189,34 +183,35 @@ function BowlList() {
         </div>
       </div>
     </div>
-  );
+  )
 }
 
 function CreateBowlCTA() {
-  const [open, setOpen] = React.useState(false);
-  const [pending, startTransition] = React.useTransition();
-  const addBowl = useBowlContext((state) => state.add);
+  const [open, setOpen] = React.useState(false)
+  const [pending, startTransition] = React.useTransition()
+  const addBowl = useBowlContext((state) => state.add)
 
   const onSubmit: React.FormEventHandler<HTMLFormElement> = (event) => {
-    event.preventDefault();
+    event.preventDefault()
     startTransition(() => {
-      const formData = new FormData(event.currentTarget);
-      const bowlName = formData.get("bowlName");
-      const bowlDescription = formData.get("bowlDescription") || "";
+      const formData = new FormData(event.currentTarget)
+      const bowlName = formData.get("bowlName")
+      const bowlDescription = formData.get("bowlDescription") ?? ""
       assert(
         typeof bowlName === "string" && bowlName.length <= 20,
         `bowlName must be a string with length <= 20`
-      );
-      assert(
-        typeof bowlDescription === "string",
-        `bowlDescription must be a string`
-      );
+      )
+      assert(typeof bowlDescription === "string", `bowlDescription must be a string`)
+
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises -- TODO The toast should be open in the next phase
       bowlsService
         .Create(bowlName, bowlDescription)
         .then(addBowl)
-        .then(() => setOpen(false));
-    });
-  };
+        .then(() => {
+          setOpen(false)
+        })
+    })
+  }
 
   return (
     <Popover onOpenChange={setOpen} open={open}>
@@ -253,7 +248,9 @@ function CreateBowlCTA() {
               type="reset"
               size="sm"
               variant="outline"
-              onClick={() => setOpen(false)}
+              onClick={() => {
+                setOpen(false)
+              }}
             >
               취소
             </Button>
@@ -270,7 +267,7 @@ function CreateBowlCTA() {
         </form>
       </PopoverContent>
     </Popover>
-  );
+  )
 }
 
-export { BowlList };
+export { BowlList }

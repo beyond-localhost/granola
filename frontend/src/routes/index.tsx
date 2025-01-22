@@ -1,10 +1,10 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { BowlList } from "./-components/bowl-list/bowl-list";
-import { FlakeList } from "./-components/flake-list/flake-list";
+import { createFileRoute } from "@tanstack/react-router"
+import { BowlList } from "./-components/bowl-list/bowl-list"
+import { FlakeList } from "./-components/flake-list/flake-list"
 
 export const Route = createFileRoute("/")({
   component: Index,
-});
+})
 
 function Index() {
   return (
@@ -20,5 +20,5 @@ function Index() {
         </p>
       </div>
     </main>
-  );
+  )
 }

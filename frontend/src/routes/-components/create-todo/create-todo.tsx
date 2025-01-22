@@ -1,83 +1,61 @@
-import * as React from "react";
-import ReactDOM from "react-dom";
-import { Transition, TransitionChild } from "@headlessui/react";
-import { useScrollLock } from "#/lib/scroll-lock";
-import { cn } from "#/lib/utils";
-import {
-  toDateKey,
-  useBowlContext,
-  useFlakeContext,
-  useTodoContext,
-} from "#/lib/state";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "#/components/ui/popover";
-import { Button } from "#/components/ui/button";
-import { CalendarIcon, Check, ChevronsUpDown } from "lucide-react";
-import {
-  Command,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from "#/components/ui/command";
-
-import { bowls, flakes, todos } from "@/go/models";
-import * as todosService from "@/go/todos/TodosService";
-import { assert } from "#/lib/assert";
-import { Calendar } from "#/components/ui/calendar";
+import * as React from "react"
+import * as ReactDOM from "react-dom"
+import { Transition, TransitionChild } from "@headlessui/react"
+import { CalendarIcon, Check, ChevronsUpDown } from "lucide-react"
+import { useScrollLock } from "#/lib/scroll-lock"
+import { cn } from "#/lib/utils"
+import { toDateKey, useBowlContext, useFlakeContext, useTodoContext } from "#/lib/state"
+import { Popover, PopoverContent, PopoverTrigger } from "#/components/ui/popover"
+import { Button } from "#/components/ui/button"
+import { Command, CommandInput, CommandItem, CommandList } from "#/components/ui/command"
+import { type bowls, type flakes, todos } from "@/go/models"
+import * as todosService from "@/go/todos/TodosService"
+import { assert } from "#/lib/assert"
+import { Calendar } from "#/components/ui/calendar"
 
 type CreateTodoProps = {
-  onClose: () => void;
-  initialDate?: Date;
-};
+  onClose: () => void
+  initialDate?: Date
+}
 
 function CreateTodo({ onClose, initialDate }: CreateTodoProps) {
-  const [open, setOpen] = React.useState(true);
-  const [bowl, setBowl] = React.useState<bowls.Bowl>();
-  const [flake, setFlake] = React.useState<flakes.Flake>();
-  const [date, setDate] = React.useState<Date>(() => initialDate || new Date());
+  const [open, setOpen] = React.useState(true)
+  const [bowl, setBowl] = React.useState<bowls.Bowl>()
+  const [flake, setFlake] = React.useState<flakes.Flake>()
+  const [date, setDate] = React.useState<Date>(() => initialDate ?? new Date())
 
-  const addTodo = useTodoContext((state) => state.add);
+  const addTodo = useTodoContext((state) => state.add)
 
   const createTodo = async () => {
-    assert(
-      flake != undefined,
-      `The flake is undefined but createTodo is triggered`
-    );
-    assert(
-      date != undefined,
-      `The date is undefined but createTodo is triggered`
-    );
-    const iso = date.toISOString();
-    const newTodo = todos.Todo.createFrom(
-      await todosService.Create(flake?.id, iso)
-    );
-    addTodo(newTodo);
-    setOpen(false);
-  };
+    assert(flake !== undefined, `The flake is undefined but createTodo is triggered`)
+    const iso = date.toISOString()
+    const newTodo = todos.Todo.createFrom(await todosService.Create(flake.id, iso))
+    addTodo(newTodo)
+    setOpen(false)
+  }
 
   React.useEffect(() => {
     function handleKeyDown(event: KeyboardEvent) {
       if (event.key === "Escape") {
-        event.preventDefault();
-        setOpen(false);
+        event.preventDefault()
+        setOpen(false)
       }
     }
 
-    window.addEventListener("keydown", handleKeyDown);
+    window.addEventListener("keydown", handleKeyDown)
     return () => {
-      window.removeEventListener("keydown", handleKeyDown);
-    };
-  }, []);
+      window.removeEventListener("keydown", handleKeyDown)
+    }
+  }, [])
 
   return ReactDOM.createPortal(
     <DialogRoot open={open}>
-      <Transition show={open} appear={true} afterLeave={onClose}>
+      <Transition show={open} appear afterLeave={onClose}>
         <TransitionChild>
           <div
-            onClick={() => setOpen(false)}
+            onClick={() => {
+              setOpen(false)
+            }}
             className={cn(
               "fixed inset-0 w-full bg-gradient-to-t from-pink-200 to-pink-500 transition opacity-50",
               "data-[closed]:opacity-0",
@@ -99,29 +77,28 @@ function CreateTodo({ onClose, initialDate }: CreateTodoProps) {
             )}
           >
             <div>
-              {date == undefined ? null : (
-                <SelectDate
-                  key={date.toString()}
-                  currentDate={date}
-                  setCurrentDate={setDate}
-                />
-              )}
+              <SelectDate
+                key={date.toString()}
+                currentDate={date}
+                setCurrentDate={setDate}
+              />
+
               <div className="mt-6">
                 <SelectBowl
                   currentBowl={bowl}
                   setBowl={(nextBowl) => {
-                    setFlake(undefined);
-                    setBowl(nextBowl);
+                    setFlake(undefined)
+                    setBowl(nextBowl)
                   }}
                 />
               </div>
-              {bowl == undefined ? null : (
+              {bowl === undefined ? null : (
                 <div className="mt-6">
                   <SelectFlake
                     key={bowl.id}
                     currentFlake={flake}
                     setFlake={(nextFlake) => {
-                      setFlake(nextFlake);
+                      setFlake(nextFlake)
                     }}
                     currentBowlId={bowl.id}
                   />
@@ -129,13 +106,18 @@ function CreateTodo({ onClose, initialDate }: CreateTodoProps) {
               )}
             </div>
             <div className="absolute bottom-6 right-6 flex gap-4">
-              <Button variant="ghost" onClick={() => setOpen(false)}>
+              <Button
+                variant="ghost"
+                onClick={() => {
+                  setOpen(false)
+                }}
+              >
                 취소
               </Button>
               <Button
                 variant="default"
                 className="bg-pink-700/90 transition-colors"
-                disabled={typeof flake == undefined || date == undefined}
+                disabled={flake === undefined}
                 onClick={createTodo}
               >
                 만들기
@@ -146,25 +128,23 @@ function CreateTodo({ onClose, initialDate }: CreateTodoProps) {
       </Transition>
     </DialogRoot>,
     document.body
-  );
+  )
 }
 
 function DialogRoot(props: React.PropsWithChildren<{ open: boolean }>) {
-  useScrollLock({ open: props.open });
-  return (
-    <div className="fixed inset-0 isolate w-full z-20">{props.children}</div>
-  );
+  useScrollLock({ open: props.open })
+  return <div className="fixed inset-0 isolate w-full z-20">{props.children}</div>
 }
 
 function SelectBowl({
   currentBowl,
   setBowl,
 }: {
-  currentBowl?: bowls.Bowl;
-  setBowl: (bowl: bowls.Bowl) => void;
+  currentBowl?: bowls.Bowl
+  setBowl: (bowl: bowls.Bowl) => void
 }) {
-  const bowls = useBowlContext((state) => Array.from(state.map.values()));
-  const [open, setOpen] = React.useState(false);
+  const bowls = useBowlContext((state) => Array.from(state.map.values()))
+  const [open, setOpen] = React.useState(false)
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -187,8 +167,8 @@ function SelectBowl({
                 <CommandItem
                   key={bowl.id}
                   onSelect={() => {
-                    setBowl(bowl);
-                    setOpen(false);
+                    setBowl(bowl)
+                    setOpen(false)
                   }}
                 >
                   {bowl.name}
@@ -199,13 +179,13 @@ function SelectBowl({
                     )}
                   />
                 </CommandItem>
-              );
+              )
             })}
           </CommandList>
         </Command>
       </PopoverContent>
     </Popover>
-  );
+  )
 }
 
 function SelectFlake({
@@ -213,16 +193,16 @@ function SelectFlake({
   currentFlake,
   setFlake,
 }: {
-  currentBowlId: number;
-  currentFlake?: flakes.Flake;
-  setFlake: (flake: flakes.Flake) => void;
+  currentBowlId: number
+  currentFlake?: flakes.Flake
+  setFlake: (flake: flakes.Flake) => void
 }) {
-  const [open, setOpen] = React.useState(false);
+  const [open, setOpen] = React.useState(false)
   const flakes = useFlakeContext((state) => {
     return Array.from(state.map.values()).filter(
       (flake) => flake.bowlId === currentBowlId
-    );
-  });
+    )
+  })
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -245,35 +225,33 @@ function SelectFlake({
                 <CommandItem
                   key={flake.id}
                   onSelect={() => {
-                    setFlake(flake);
-                    setOpen(false);
+                    setFlake(flake)
+                    setOpen(false)
                   }}
                 >
                   {flake.name}
                   <Check
                     className={cn(
                       "ml-auto",
-                      flake.id === currentFlake?.id
-                        ? "opacity-100"
-                        : "opacity-0"
+                      flake.id === currentFlake?.id ? "opacity-100" : "opacity-0"
                     )}
                   />
                 </CommandItem>
-              );
+              )
             })}
           </CommandList>
         </Command>
       </PopoverContent>
     </Popover>
-  );
+  )
 }
 
 function SelectDate({
   currentDate,
   setCurrentDate,
 }: {
-  currentDate: Date | undefined;
-  setCurrentDate: (nextDate: Date) => void;
+  currentDate: Date | undefined
+  setCurrentDate: (nextDate: Date) => void
 }) {
   return (
     <Popover>
@@ -284,9 +262,7 @@ function SelectDate({
           className="bg-neutral-100/10 justify-between border-none text-neutral-900 hover:bg-pink-400/30"
         >
           <CalendarIcon />
-          {currentDate == undefined
-            ? "날짜를 정해주세요"
-            : toDateKey(currentDate)}
+          {currentDate === undefined ? "날짜를 정해주세요" : toDateKey(currentDate)}
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-auto p-o" align="start">
@@ -294,15 +270,15 @@ function SelectDate({
           mode="single"
           selected={currentDate}
           onSelect={(_, selectedDate) => {
-            setCurrentDate(selectedDate);
+            setCurrentDate(selectedDate)
           }}
           required
         />
       </PopoverContent>
     </Popover>
-  );
+  )
 }
 
-const CREATE_TODO_ID = "create-todo";
+const CREATE_TODO_ID = "create-todo"
 
-export { CreateTodo, CREATE_TODO_ID };
+export { CreateTodo, CREATE_TODO_ID }

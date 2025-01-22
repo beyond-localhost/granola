@@ -1,11 +1,9 @@
-import * as React from "react";
-import * as DropdownMenuPrimitive from "@radix-ui/react-dropdown-menu";
-import { Check, Circle } from "lucide-react";
+import * as React from "react"
+import * as DropdownMenuPrimitive from "@radix-ui/react-dropdown-menu"
+import { cn } from "#/lib/utils"
 
-import { cn } from "#/lib/utils";
-
-const DropdownMenu = DropdownMenuPrimitive.Root;
-const DropdownMenuTrigger = DropdownMenuPrimitive.Trigger;
+const DropdownMenu = DropdownMenuPrimitive.Root
+const DropdownMenuTrigger = DropdownMenuPrimitive.Trigger
 
 function DropdownMenuContent({
   className,
@@ -24,7 +22,7 @@ function DropdownMenuContent({
         {...props}
       />
     </DropdownMenuPrimitive.Portal>
-  );
+  )
 }
 
 function DropdownMenuItem({
@@ -39,7 +37,7 @@ function DropdownMenuItem({
       )}
       {...props}
     />
-  );
+  )
 }
 
 function DropdownMenuLabel({
@@ -51,7 +49,7 @@ function DropdownMenuLabel({
       className={cn("px-2 py-1.5 text-sm font-semibold", className)}
       {...props}
     />
-  );
+  )
 }
 
 export {
@@ -60,4 +58,4 @@ export {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
-};
+}

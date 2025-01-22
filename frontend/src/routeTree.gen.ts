@@ -10,39 +10,39 @@
 
 // Import Routes
 
-import { Route as rootRoute } from './routes/__root'
-import { Route as CalendarImport } from './routes/calendar'
-import { Route as IndexImport } from './routes/index'
+import { Route as rootRoute } from "./routes/__root"
+import { Route as CalendarImport } from "./routes/calendar"
+import { Route as IndexImport } from "./routes/index"
 
 // Create/Update Routes
 
 const CalendarRoute = CalendarImport.update({
-  id: '/calendar',
-  path: '/calendar',
+  id: "/calendar",
+  path: "/calendar",
   getParentRoute: () => rootRoute,
 } as any)
 
 const IndexRoute = IndexImport.update({
-  id: '/',
-  path: '/',
+  id: "/",
+  path: "/",
   getParentRoute: () => rootRoute,
 } as any)
 
 // Populate the FileRoutesByPath interface
 
-declare module '@tanstack/react-router' {
+declare module "@tanstack/react-router" {
   interface FileRoutesByPath {
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
+    "/": {
+      id: "/"
+      path: "/"
+      fullPath: "/"
       preLoaderRoute: typeof IndexImport
       parentRoute: typeof rootRoute
     }
-    '/calendar': {
-      id: '/calendar'
-      path: '/calendar'
-      fullPath: '/calendar'
+    "/calendar": {
+      id: "/calendar"
+      path: "/calendar"
+      fullPath: "/calendar"
       preLoaderRoute: typeof CalendarImport
       parentRoute: typeof rootRoute
     }
@@ -52,27 +52,27 @@ declare module '@tanstack/react-router' {
 // Create and export the route tree
 
 export interface FileRoutesByFullPath {
-  '/': typeof IndexRoute
-  '/calendar': typeof CalendarRoute
+  "/": typeof IndexRoute
+  "/calendar": typeof CalendarRoute
 }
 
 export interface FileRoutesByTo {
-  '/': typeof IndexRoute
-  '/calendar': typeof CalendarRoute
+  "/": typeof IndexRoute
+  "/calendar": typeof CalendarRoute
 }
 
 export interface FileRoutesById {
   __root__: typeof rootRoute
-  '/': typeof IndexRoute
-  '/calendar': typeof CalendarRoute
+  "/": typeof IndexRoute
+  "/calendar": typeof CalendarRoute
 }
 
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/calendar'
+  fullPaths: "/" | "/calendar"
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/calendar'
-  id: '__root__' | '/' | '/calendar'
+  to: "/" | "/calendar"
+  id: "__root__" | "/" | "/calendar"
   fileRoutesById: FileRoutesById
 }
 
