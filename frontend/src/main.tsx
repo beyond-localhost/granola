@@ -14,12 +14,11 @@ declare module "@tanstack/react-router" {
   }
 }
 
-const rootElement = document.getElementById("root")
-if (rootElement?.innerHTML) {
-  const root = ReactDOM.createRoot(rootElement)
-  root.render(
-    <StrictMode>
-      <RouterProvider router={router} />
-    </StrictMode>
-  )
-}
+// eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- it is okay.
+const rootElement = document.getElementById("root")!
+const root = ReactDOM.createRoot(rootElement)
+root.render(
+  <StrictMode>
+    <RouterProvider router={router} />
+  </StrictMode>
+)
