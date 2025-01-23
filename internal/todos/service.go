@@ -6,13 +6,10 @@ import (
 )
 
 type TodosService struct {
-	repo TodoRepository
+	a *Adapter
 }
 
 
-/**
-** TODO: synchronize the time between client and go
-**/
 func isoTimeToTime(iso string) (time.Time, error) {
 	t, err := time.Parse(time.RFC3339Nano, iso)
 	if err != nil {
@@ -23,29 +20,35 @@ func isoTimeToTime(iso string) (time.Time, error) {
 }
 
 
-func NewTodosService(repo TodoRepository) *TodosService {
-	return &TodosService{repo}
+func NewTodosService(a *Adapter) *TodosService {
+	return &TodosService{a}
 }
 
-
-func (s *TodosService) Create(flakeId int64, scheduledAtISO string) (*TodoWithFlakeName, error) {
+func (s *TodosService) Create(flakeId int64, scheduledAtISO string) (Todo, error) {
 	scheduledAt, err := isoTimeToTime(scheduledAtISO)
+	
 	if err != nil {
-		return nil, err
+		var zero Todo
+		return zero, err
 	}
 
-	return s.repo.Create(flakeId, scheduledAt)
+	params := CreateParams{
+		FlakeID: flakeId,
+		ScheduledAt: scheduledAt,
+	}
+
+	return s.a.q.Create(s.a.ctx, params)
 }
 
 func (s *TodosService) GetAll() ([]Todo, error) {
-	return s.repo.GetAll()
+	return s.a.q.GetAll(s.a.ctx)
 }
 
 func (s *TodosService) GetAllByFlakeId(flakeId int64) ([]Todo, error) {
-	return s.repo.GetAllByFlakeId(flakeId)
+	return s.a.q.GetAllByFlakeId(s.a.ctx, flakeId)
 }
 
-func (s *TodosService) GetAllByRange(fromISO string, toISO string) ([]TodoWithFlakeName, error) {
+func (s *TodosService) GetAllByRange(fromISO string, toISO string) ([]GetAllByRangeRow, error) {
 	from, err := isoTimeToTime(fromISO)
 	if err != nil {
 		return nil, err
@@ -62,14 +65,29 @@ func (s *TodosService) GetAllByRange(fromISO string, toISO string) ([]TodoWithFl
 
 	fmt.Printf("The from is %v and the to is %v", from, to)
 
-	return s.repo.GetAllByRange(from, to)
+	params := GetAllByRangeParams{
+		FromScheduledAt: from,
+		ToScheduledAt: to,
+	}
+
+	return s.a.q.GetAllByRange(s.a.ctx, params)
 }
 
-func (s *TodosService) SetDone(id int64) (bool, error) {
-	return s.repo.SetDone(id)
+func (s *TodosService) SetDone(id int64, nextDone bool) error {
+	var done int64
+	if nextDone {
+		done = 1
+	} else {
+		done = 0
+	}
+	params := SetDoneParams{
+		Done: done,
+		ID: id,
+	}
+	return s.a.q.SetDone(s.a.ctx, params)
 }
 
 
 func (s *TodosService) Remove(id int64) (error) {
-	return s.repo.Remove(id)
+	return s.a.q.DeleteById(s.a.ctx, id)
 }

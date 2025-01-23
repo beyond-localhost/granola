@@ -3,8 +3,8 @@ import { z } from "zod"
 const Todo = z.object({
   id: z.number(),
   flakeId: z.number(),
-  done: z.boolean(),
-  scheduledAt: z.date(),
+  done: z.coerce.boolean(),
+  scheduledAt: z.coerce.date(),
 })
 
 type Todo = z.infer<typeof Todo>

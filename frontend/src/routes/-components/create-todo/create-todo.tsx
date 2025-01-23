@@ -16,7 +16,7 @@ import { type Flake } from "#/domain/flake/schema"
 import * as todosService from "@/go/todos/TodosService"
 import { assert } from "#/lib/assert"
 import { Calendar } from "#/components/ui/calendar"
-import { CreateTodo as CreateTodoSchema } from "#/domain/todo/schema"
+import { CreateTodo as CreateTodoSchema, Todo } from "#/domain/todo/schema"
 
 type CreateTodoProps = {
   onClose: () => void
@@ -50,8 +50,9 @@ function CreateTodo({ onClose, initialDate }: CreateTodoProps) {
         payload.flakeId,
         payload.scheduledAt.toISOString()
       )
-      // TODO I don't know but Why doesn't wails parse date..
-      addTodo({ ...newTodo, scheduledAt: new Date(newTodo.scheduledAt) })
+
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment -- zod parse this any to the date
+      addTodo(Todo.parse({ ...newTodo, scheduledAt: newTodo.scheduledAt }))
       setOpen(false)
     } catch (error: unknown) {
       toast.error(`할 일을 만드는데 실패하였습니다`, { className: "text-red-500 " })

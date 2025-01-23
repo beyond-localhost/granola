@@ -1,36 +1,36 @@
 package flakes
 
-type FlakeService struct {
-	repo FlakeRepository
+type FlakesService struct {
+	a *Adapter
 }
 
-func NewFlakeService(repo FlakeRepository) *FlakeService {
-	return &FlakeService{repo}
+func NewFlakesService(a *Adapter) *FlakesService {
+	return &FlakesService{a}
 }
 
-
-
-func (s *FlakeService) Create(name string, description *string, bowlId int64) (*Flake, error) {
-	return s.repo.Create(name, description, bowlId)
+func (s *FlakesService) GetAll() ([]Flake, error) {
+	return s.a.q.GetAll(s.a.ctx)
 }
 
-func (s *FlakeService) GetAll() ([]Flake, error) {
-	return s.repo.GetAll()
+func (s *FlakesService) Create(name string, description string, bowlId int64) (Flake, error) {
+	params := CreateParams{
+		Name: name,
+		Description: &description,
+		BowlID: bowlId,
+	}
+
+	return s.a.q.Create(s.a.ctx,params)
 }
 
-func (s *FlakeService) GetAllByBowlId(bowlId int64) ([]Flake, error) {
-	return s.repo.GetAllByBowlId(bowlId)
+func (s *FlakesService) GetAllByBowlId(bowlId int64) ([]Flake, error) {
+	return s.a.q.GetAllByBowlId(s.a.ctx, bowlId)
 }
 
-func (s *FlakeService) GetById(id int64) (*Flake, error) {
-	return s.repo.GetById(id)
+func (s *FlakesService) GetById(id int64) (Flake, error) {
+	return s.a.q.GetById(s.a.ctx, id)
 }
 
-func (s *FlakeService) UpdateById(id int64, update FlakeUpdate) (*Flake, error) {
-	return s.repo.UpdateById(id, update)
-}
-
-func (s *FlakeService) DeleteById(id int64) error {
-	return s.repo.DeleteById(id)
+func (s *FlakesService) DeleteById(id int64) error {
+	return s.a.q.DeleteById(s.a.ctx, id)
 }
 

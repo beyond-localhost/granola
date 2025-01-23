@@ -22,6 +22,6 @@ export function Remove(arg1) {
   return window['go']['todos']['TodosService']['Remove'](arg1);
 }
 
-export function SetDone(arg1) {
-  return window['go']['todos']['TodosService']['SetDone'](arg1);
+export function SetDone(arg1, arg2) {
+  return window['go']['todos']['TodosService']['SetDone'](arg1, arg2);
 }

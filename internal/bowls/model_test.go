@@ -1,6 +1,7 @@
 package bowls_test
 
 import (
+	"context"
 	"database/sql"
 	"granola/internal/bowls"
 	"granola/internal/flakes"
@@ -12,6 +13,8 @@ import (
 
 // TestCreate tests the Create method of the SQLiteBowlRepository.
 func TestCreate(t *testing.T) {
+	ctx := context.Background()
+
 	conn, err := testutil.NewTestConn()
 	if err != nil {
 		t.Fatal(err)
@@ -19,27 +22,43 @@ func TestCreate(t *testing.T) {
 	defer func() {
 		conn.DB.Close()
 	}()
+	bowlQuery := bowls.New(conn.DB)
+	
+	t.Run("Create with non nullable description", func(t *testing.T) {
+		name := "bowl1"
+		description := "aabbccddeeffgghhiijjkkllmmnn"
+		got, err := bowlQuery.Create(ctx, bowls.CreateParams{
+			Name: name,
+			Description: &description,
+		})
+		if err != nil {
+			t.Fatal(err)
+		}
+	
+		if got.Name != name {
+			t.Errorf("Create(%s, %s) should make a bowl with name(%s) but got %s", name, description, name, got.Name)
+		}
+	})
 
-	bowlRepo := bowls.NewSQLiteBowlRepository()
-	bowlRepo.SetDB(conn.DB)
+	t.Run("Create with nullable description", func(t *testing.T) {
+		name := "bowl2"
 
-	name := "bowl1"
-	description := "aabbccddeeffgghhiijjkkllmmnn"
-	created, err := bowlRepo.Create(name, &description)
+		got, err := bowlQuery.Create(ctx, bowls.CreateParams{
+			Name: name,
+			Description: nil,
+		})
 
-	if err != nil {
-		t.Fatal(err)
-	}
+		if err != nil {
+			t.Fatal(err)
+		}
 
-	got, err := bowlRepo.GetById(created.Id)
+		if got.Name != name {
+			t.Errorf("Create(%s, %s) should make a created bowl with name(%s) but got %s", name, "", name, got.Name)
+		}
+	})
 
-	if err != nil {
-		t.Fatal(err)
-	}
 
-	if got.Name != created.Name {
-		t.Errorf("bowlRepo.create(%s, %s) makes a bowl with id %d and name %s, but got the name of %s", name, description, created.Id, created.Name, got.Name)
-	}
+
 }
 
 
@@ -56,19 +75,25 @@ func TestDelete(t *testing.T) {
 		conn.DB.Close()
 	}()
 
-	bowlRepo := bowls.NewSQLiteBowlRepository()
-	flakesRepo := flakes.NewSQLiteFlakeRepository()
-	todoRepo := todos.NewSQLiteTodoRepository()
+	ctx := context.Background()
+
+
+	bowlQuery := bowls.New(conn.DB)
+	flakeQuery := flakes.New(conn.DB)
+	todoQuery := todos.New(conn.DB)
+	// bowlRepo := bowls.NewSQLiteBowlRepository()
+	// flakesRepo := flakes.NewSQLiteFlakeRepository()
+	// todoRepo := todos.NewSQLiteTodoRepository()
 
 	// Set db on above repos
-	bowlRepo.SetDB(conn.DB)
-	flakesRepo.SetDB(conn.DB)
-	todoRepo.SetDB(conn.DB)
+	// bowlRepo.SetDB(conn.DB)
+	// flakesRepo.SetDB(conn.DB)
+	// todoRepo.SetDB(conn.DB)
 
 
 	bowlName := "bowl1"
 	
-	createdBowl, err := bowlRepo.Create(bowlName, nil)
+	createdBowl, err := bowlQuery.Create(ctx, bowls.CreateParams{Name: bowlName})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -77,14 +102,23 @@ func TestDelete(t *testing.T) {
 	
 	flakeName := "flake1"
 	
-	createdFlake, err := flakesRepo.Create(flakeName, nil, createdBowl.Id)
+	// createdFlake, err := flakesRepo.Create(flakeName, nil, createdBowl.Id)
+	createdFlake, err := flakeQuery.Create(ctx, flakes.CreateParams{
+		Name: flakeName,
+		BowlID: createdBowl.ID,
+	})
+	
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	
 	
-	createdTodo, err := todoRepo.Create(createdFlake.Id, time.Now())
+	// createdTodo, err := todoRepo.Create(createdFlake.Id, time.Now())
+	createdTodo, err := todoQuery.Create(ctx, todos.CreateParams{
+		FlakeID: createdFlake.ID,
+		ScheduledAt: time.Now(),
+	})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -93,31 +127,35 @@ func TestDelete(t *testing.T) {
 
 
 	// Delete the bowl
-	err = bowlRepo.DeleteById(createdBowl.Id)
+	// err = bowlRepo.DeleteById(createdBowl.Id)
+	err = bowlQuery.DeleteById(ctx, createdBowl.ID)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	_, err = bowlRepo.GetById(createdBowl.Id)
+
+	// _, err = bowlRepo.GetById(createdBowl.Id)
+	_, err = bowlQuery.GetById(ctx, createdBowl.ID)
 	
 	if err == nil {
-		t.Errorf("bowlRepo.DeleteById(%d) should delete the bowl", createdBowl.Id)
+		t.Errorf("bowlRepo.DeleteById(%d) should delete the bowl", createdBowl.ID)
 	} else if err != sql.ErrNoRows {
 		t.Fatal(err)
 	}
 
 	// Check if the flake is deleted
-	_, err = flakesRepo.GetById(createdFlake.Id)
+	// _, err = flakesRepo.GetById(÷createdFlake.Id)
+	_, err = flakeQuery.GetById(ctx, createdFlake.ID)
 	if err == nil {
-		t.Errorf("bowlRepo.DeleteById(%d) should delete the flake", createdFlake.Id)
+		t.Errorf("bowlRepo.DeleteById(%d) should delete the flake", createdFlake.ID)
 	} else if err != sql.ErrNoRows {
 		t.Fatal(err)
 	}
 
 	// Check if the todo is deleted
-	_, err = todoRepo.GetById(createdTodo.Id)
+	_, err = todoQuery.GetById(ctx, createdTodo.ID)
 	if err == nil {
-		t.Errorf("bowlRepo.DeleteById(%d) should delete the todo", createdTodo.Id)
+		t.Errorf("bowlRepo.DeleteById(%d) should delete the todo", createdTodo.ID)
 	} else if err != sql.ErrNoRows {
 		t.Fatal(err)
 	}

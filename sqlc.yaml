@@ -1,0 +1,38 @@
+version: "2"
+sql:
+  - engine: "sqlite"
+    schema: "internal/bowls/model.sql"
+    queries: "internal/bowls/query.sql"
+    gen:
+      go:
+        package: "bowls"
+        out: "internal/bowls"
+        emit_empty_slices: true
+        emit_json_tags: true
+        emit_pointers_for_null_types: true
+        json_tags_id_uppercase: false
+        json_tags_case_style: "camel"
+  - engine: "sqlite"
+    schema: "internal/flakes/model.sql"
+    queries: "internal/flakes/query.sql"
+    gen:
+      go:
+        package: "flakes"
+        out: "internal/flakes"
+        emit_empty_slices: true
+        emit_json_tags: true
+        emit_pointers_for_null_types: true
+        json_tags_id_uppercase: false
+        json_tags_case_style: "camel"
+  - engine: "sqlite"
+    schema: ["internal/flakes/model.sql", "internal/todos/model.sql"]
+    queries: "internal/todos/query.sql"
+    gen:
+      go:
+        package: "todos"
+        out: "internal/todos"
+        emit_empty_slices: true
+        emit_json_tags: true
+        emit_pointers_for_null_types: true
+        json_tags_id_uppercase: false
+        json_tags_case_style: "camel"

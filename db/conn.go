@@ -82,8 +82,6 @@ func (c *Conn) Open() error {
 	if len(c.AppDirPath) == 0 {
 		return fmt.Errorf("appDirPath is not set. Call either c.SetAppDirPath or c.SetAppDirPathByBuildType")
 	}
-	// TODO
-	// We Don't check the c.DBName here, because the test db will not have the filename.
 
 	dbPath := filepath.Join(c.AppDirPath, c.DBName)
 	log.Printf("Opening sqlite3 with dbPath %s\n", dbPath)
@@ -111,9 +109,6 @@ func (c *Conn) HasFile() (bool, error) {
 	if len(c.AppDirPath) == 0 {
 		return false, fmt.Errorf("appDirPath is not set. Call either c.SetAppDirPath or c.SetAppDirPathByBuildType")
 	}
-
-	// TODO
-	// We Don't check the c.DBName here, because the test db will not have the filename.
 	
 	
 	dbPath := filepath.Join(c.AppDirPath, c.DBName)
