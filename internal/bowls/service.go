@@ -1,14 +1,10 @@
 package bowls
 
-import (
-	"database/sql"
-)
-
 type BowlsService struct {
-	a Adapter
+	a *Adapter
 }
 
-func NewBowlsService(a Adapter) *BowlsService {
+func NewBowlsService(a *Adapter) *BowlsService {
 	return &BowlsService{a}
 }
 
@@ -20,16 +16,10 @@ func (s *BowlsService) GetById(id int64) (Bowl, error) {
 	return s.a.q.GetById(s.a.ctx, id)
 }
 
-func (s *BowlsService) Create(name string, description *string) (Bowl, error) {
-	descriptionVal := *description
-	descriptionEmtpy := description == nil
-
+func (s *BowlsService) Create(name string, description string) (Bowl, error) {
 	params := CreateParams{
 		Name: name,
-		Description: sql.NullString{
-			String: descriptionVal,
-			Valid: !descriptionEmtpy,
-		},
+		Description: &description,
 	}
 
 	return s.a.q.Create(s.a.ctx, params)

@@ -1,14 +1,10 @@
 package flakes
 
-import (
-	"database/sql"
-)
-
 type FlakesService struct {
-	a Adapter
+	a *Adapter
 }
 
-func NewFlakesService(a Adapter) *FlakesService {
+func NewFlakesService(a *Adapter) *FlakesService {
 	return &FlakesService{a}
 }
 
@@ -16,16 +12,10 @@ func (s *FlakesService) GetAll() ([]Flake, error) {
 	return s.a.q.GetAll(s.a.ctx)
 }
 
-func (s *FlakesService) Create(name string, description *string, bowlId int64) (Flake, error) {
-	descriptionVal := *description
-	descriptionEmtpy := description == nil
-
+func (s *FlakesService) Create(name string, description string, bowlId int64) (Flake, error) {
 	params := CreateParams{
 		Name: name,
-		Description: sql.NullString{
-			String: descriptionVal,
-			Valid: !descriptionEmtpy,
-		},
+		Description: &description,
 		BowlID: bowlId,
 	}
 

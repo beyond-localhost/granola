@@ -17,7 +17,3 @@ export function GetAll() {
 export function GetById(arg1) {
   return window['go']['bowls']['BowlsService']['GetById'](arg1);
 }
-
-export function UpdateById(arg1, arg2) {
-  return window['go']['bowls']['BowlsService']['UpdateById'](arg1, arg2);
-}

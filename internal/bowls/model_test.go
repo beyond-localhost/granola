@@ -29,10 +29,7 @@ func TestCreate(t *testing.T) {
 		description := "aabbccddeeffgghhiijjkkllmmnn"
 		got, err := bowlQuery.Create(ctx, bowls.CreateParams{
 			Name: name,
-			Description: sql.NullString{
-				String: description,
-				Valid:  true,
-			},
+			Description: &description,
 		})
 		if err != nil {
 			t.Fatal(err)
@@ -45,14 +42,10 @@ func TestCreate(t *testing.T) {
 
 	t.Run("Create with nullable description", func(t *testing.T) {
 		name := "bowl2"
-		description := sql.NullString{
-			String: "",
-			Valid: false,
-		}
 
 		got, err := bowlQuery.Create(ctx, bowls.CreateParams{
 			Name: name,
-			Description: description,
+			Description: nil,
 		})
 
 		if err != nil {
@@ -60,7 +53,7 @@ func TestCreate(t *testing.T) {
 		}
 
 		if got.Name != name {
-			t.Errorf("Create(%s, %s) should make a created bowl with name(%s) but got %s", name, description.String, name, got.Name)
+			t.Errorf("Create(%s, %s) should make a created bowl with name(%s) but got %s", name, "", name, got.Name)
 		}
 	})
 

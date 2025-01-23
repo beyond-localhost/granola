@@ -6,7 +6,7 @@ import (
 )
 
 type TodosService struct {
-	a Adapter
+	a *Adapter
 }
 
 
@@ -20,7 +20,7 @@ func isoTimeToTime(iso string) (time.Time, error) {
 }
 
 
-func NewTodosService(a Adapter) *TodosService {
+func NewTodosService(a *Adapter) *TodosService {
 	return &TodosService{a}
 }
 
@@ -74,8 +74,14 @@ func (s *TodosService) GetAllByRange(fromISO string, toISO string) ([]GetAllByRa
 }
 
 func (s *TodosService) SetDone(id int64, nextDone bool) error {
+	var done int64
+	if nextDone {
+		done = 1
+	} else {
+		done = 0
+	}
 	params := SetDoneParams{
-		Done: nextDone,
+		Done: done,
 		ID: id,
 	}
 	return s.a.q.SetDone(s.a.ctx, params)

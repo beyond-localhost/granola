@@ -22,7 +22,7 @@ import {
 } from "#/components/ui/table"
 import { type Bowl } from "#/domain/bowl/schema"
 import { type Flake } from "#/domain/flake/schema"
-import * as flakesService from "@/go/flakes/FlakeService"
+import * as flakesService from "@/go/flakes/FlakesService"
 import { Button } from "#/components/ui/button"
 import { Popover, PopoverContent } from "#/components/ui/popover"
 import { Input } from "#/components/ui/input"
@@ -246,7 +246,7 @@ function CreateFlakeCTA({ bowls }: CreateFlakeCTAProps) {
       const payload = zodValidation.data
 
       flakesService
-        .Create(payload.name, payload.description, payload.bowlId)
+        .Create(payload.name, payload.description ?? "", payload.bowlId)
         .then(addFlake, (reason: unknown) => {
           toast.error(`할 일을 저장하는데 실패했습니다. ${String(reason)}`, {
             className: "text-red-500",

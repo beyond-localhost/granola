@@ -2,7 +2,6 @@ package flakes_test
 
 import (
 	"context"
-	"database/sql"
 	"granola/internal/bowls"
 	"granola/internal/flakes"
 	"granola/internal/testutil"
@@ -33,10 +32,7 @@ func TestCreate(t *testing.T) {
 
 		createdFlake, err := flakeQuery.Create(ctx, flakes.CreateParams{
 			Name: flakeName, 
-			Description: sql.NullString{
-				String: description,
-				Valid: true,
-			},
+			Description: &description,
 			BowlID: createdBowl.ID,
 		})
 
@@ -60,10 +56,7 @@ func TestCreate(t *testing.T) {
 
 		createdFlake, err := flakeQuery.Create(ctx, flakes.CreateParams{
 			Name: flakeName, 
-			Description: sql.NullString{
-				String: description,
-				Valid: false,
-			},
+			Description: nil,
 			BowlID: createdBowl.ID,
 		})
 

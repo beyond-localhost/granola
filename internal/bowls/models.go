@@ -4,12 +4,8 @@
 
 package bowls
 
-import (
-	"database/sql"
-)
-
 type Bowl struct {
-	ID          int64          `json:"id"`
-	Name        string         `json:"name"`
-	Description sql.NullString `json:"description"`
+	ID          int64   `json:"id"`
+	Name        string  `json:"name"`
+	Description *string `json:"description"`
 }

@@ -4,13 +4,9 @@
 
 package flakes
 
-import (
-	"database/sql"
-)
-
 type Flake struct {
-	ID          int64          `json:"id"`
-	Name        string         `json:"name"`
-	Description sql.NullString `json:"description"`
-	BowlID      int64          `json:"bowlId"`
+	ID          int64   `json:"id"`
+	Name        string  `json:"name"`
+	Description *string `json:"description"`
+	BowlID      int64   `json:"bowlId"`
 }

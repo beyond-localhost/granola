@@ -245,9 +245,10 @@ function TodoItem({ todo }: { todo: Todo }) {
   }
 
   const onDoneSelect = async () => {
+    const nextDone = !todo.done
     try {
-      await todosService.SetDone(todo.id)
-      setDone({ ...todo, done: !todo.done })
+      await todosService.SetDone(todo.id, nextDone)
+      setDone({ ...todo, done: nextDone })
     } catch (error: unknown) {
       toast.error(`할 일을 변경하는데 실패했습니다. ${String(error)}`, {
         className: "text-red-500",

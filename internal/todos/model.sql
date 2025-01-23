@@ -1,7 +1,7 @@
 create table if not exists todos (
   id integer primary key,
   flake_id integer not null,
-  done binary not null default 0, -- 0 is false, 1 is true
+  done integer not null default 0, -- 0 is false, 1 is true
   scheduled_at timestamp not null,
 
   constraint fk_todos_flakes

@@ -233,7 +233,7 @@ function CreateBowlCTA() {
       const payload = zodValidation.data
 
       bowlsService
-        .Create(payload.name, payload.description)
+        .Create(payload.name, payload.description ?? "")
         .then(addBowl, (reason: unknown) => {
           toast.error(`주제를 저장하는데 실패했습니다. ${String(reason)}`, {
             className: "text-red-500",

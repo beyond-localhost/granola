@@ -5,20 +5,19 @@
 package todos
 
 import (
-	"database/sql"
 	"time"
 )
 
 type Flake struct {
-	ID          int64          `json:"id"`
-	Name        string         `json:"name"`
-	Description sql.NullString `json:"description"`
-	BowlID      int64          `json:"bowlId"`
+	ID          int64   `json:"id"`
+	Name        string  `json:"name"`
+	Description *string `json:"description"`
+	BowlID      int64   `json:"bowlId"`
 }
 
 type Todo struct {
-	ID          int64       `json:"id"`
-	FlakeID     int64       `json:"flakeId"`
-	Done        interface{} `json:"done"`
-	ScheduledAt time.Time   `json:"scheduledAt"`
+	ID          int64     `json:"id"`
+	FlakeID     int64     `json:"flakeId"`
+	Done        int64     `json:"done"`
+	ScheduledAt time.Time `json:"scheduledAt"`
 }

@@ -29,11 +29,11 @@ func main() {
 
 	
 	bowlsAdapter := bowls.Adapter{}
-	bowlsService := bowls.NewBowlsService(bowlsAdapter)
+	bowlsService := bowls.NewBowlsService(&bowlsAdapter)
 	flakesAdapter := flakes.Adapter{}
-	flakesService := flakes.NewFlakesService(flakesAdapter)
+	flakesService := flakes.NewFlakesService(&flakesAdapter)
 	todosAdapter := todos.Adapter{}
-	todosService := todos.NewTodosService(todosAdapter)
+	todosService := todos.NewTodosService(&todosAdapter)
 
 	app := NewApp()
 

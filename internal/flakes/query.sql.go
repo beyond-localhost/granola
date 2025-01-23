@@ -7,7 +7,6 @@ package flakes
 
 import (
 	"context"
-	"database/sql"
 )
 
 const create = `-- name: Create :one
@@ -17,9 +16,9 @@ returning id, name, description, bowl_id
 `
 
 type CreateParams struct {
-	Name        string         `json:"name"`
-	Description sql.NullString `json:"description"`
-	BowlID      int64          `json:"bowlId"`
+	Name        string  `json:"name"`
+	Description *string `json:"description"`
+	BowlID      int64   `json:"bowlId"`
 }
 
 func (q *Queries) Create(ctx context.Context, arg CreateParams) (Flake, error) {
@@ -137,9 +136,9 @@ returning id, name, description, bowl_id
 `
 
 type UpdateByIdParams struct {
-	Name        sql.NullString `json:"name"`
-	Description sql.NullString `json:"description"`
-	ID          int64          `json:"id"`
+	Name        *string `json:"name"`
+	Description *string `json:"description"`
+	ID          int64   `json:"id"`
 }
 
 func (q *Queries) UpdateById(ctx context.Context, arg UpdateByIdParams) (Flake, error) {

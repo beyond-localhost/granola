@@ -7,7 +7,6 @@ package bowls
 
 import (
 	"context"
-	"database/sql"
 )
 
 const create = `-- name: Create :one
@@ -17,8 +16,8 @@ returning id, name, description
 `
 
 type CreateParams struct {
-	Name        string         `json:"name"`
-	Description sql.NullString `json:"description"`
+	Name        string  `json:"name"`
+	Description *string `json:"description"`
 }
 
 func (q *Queries) Create(ctx context.Context, arg CreateParams) (Bowl, error) {
@@ -88,9 +87,9 @@ returning id, name, description
 `
 
 type UpdateByIdParams struct {
-	Name        sql.NullString `json:"name"`
-	Description sql.NullString `json:"description"`
-	ID          int64          `json:"id"`
+	Name        *string `json:"name"`
+	Description *string `json:"description"`
+	ID          int64   `json:"id"`
 }
 
 func (q *Queries) UpdateById(ctx context.Context, arg UpdateByIdParams) (Bowl, error) {

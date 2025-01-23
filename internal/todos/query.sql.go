@@ -183,8 +183,8 @@ returning id, flake_id, done, scheduled_at
 `
 
 type SetDoneParams struct {
-	Done interface{} `json:"done"`
-	ID   int64       `json:"id"`
+	Done int64 `json:"done"`
+	ID   int64 `json:"id"`
 }
 
 func (q *Queries) SetDone(ctx context.Context, arg SetDoneParams) error {
