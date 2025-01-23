@@ -1,7 +1,7 @@
 import * as React from "react"
 import * as ReactDOM from "react-dom"
 import { Transition, TransitionChild } from "@headlessui/react"
-import { CalendarIcon, Check, ChevronsUpDown } from "lucide-react"
+import { CalendarIcon } from "lucide-react"
 import { toast } from "sonner"
 import { useScrollLock } from "#/lib/scroll-lock"
 import { cn } from "#/lib/utils"
@@ -10,8 +10,6 @@ import { useFlakeContext } from "#/domain/flake/store"
 import { useTodoContext, toDateKey } from "#/domain/todo/store"
 import { Popover, PopoverContent, PopoverTrigger } from "#/components/ui/popover"
 import { Button } from "#/components/ui/button"
-import { Command, CommandInput, CommandItem, CommandList } from "#/components/ui/command"
-import { type Bowl } from "#/domain/bowl/schema"
 import { type Flake } from "#/domain/flake/schema"
 import * as todosService from "@/go/todos/TodosService"
 import { assert } from "#/lib/assert"
@@ -24,18 +22,23 @@ type CreateTodoProps = {
 }
 
 function CreateTodo({ onClose, initialDate }: CreateTodoProps) {
-  const [open, setOpen] = React.useState(true)
-  const [bowl, setBowl] = React.useState<Bowl>()
-  const [flake, setFlake] = React.useState<Flake>()
-  const [date, setDate] = React.useState<Date>(() => initialDate ?? new Date())
-
+  const bowlMap = useBowlContext((state) => state.map)
+  const flakeMap = useFlakeContext((state) => state.map)
   const addTodo = useTodoContext((state) => state.upsert)
 
+  const [open, setOpen] = React.useState(true)
+  const [date, setDate] = React.useState<Date>(() => initialDate ?? new Date())
+
+  const [targetFlake, setTargetFlake] = React.useState<Flake>()
+
   const createTodo = async () => {
-    assert(flake !== undefined, `The flake is undefined but createTodo is triggered`)
+    assert(
+      targetFlake !== undefined,
+      `The flake is undefined but createTodo is triggered`
+    )
 
     const zodValidation = CreateTodoSchema.safeParse({
-      flakeId: flake.id,
+      flakeId: targetFlake.id,
       scheduledAt: date,
     })
 
@@ -58,6 +61,18 @@ function CreateTodo({ onClose, initialDate }: CreateTodoProps) {
       toast.error(`할 일을 만드는데 실패하였습니다`, { className: "text-red-500 " })
     }
   }
+
+  const dataList = React.useMemo(() => {
+    const flakeList = Array.from(flakeMap.values())
+    return flakeList.map((f) => {
+      const bowl = bowlMap.get(f.bowlId)
+      assert(bowl !== undefined, `The bowl should not be nullish`)
+      return {
+        flake: f,
+        bowl,
+      }
+    })
+  }, [bowlMap, flakeMap])
 
   React.useEffect(() => {
     function handleKeyDown(event: KeyboardEvent) {
@@ -102,34 +117,56 @@ function CreateTodo({ onClose, initialDate }: CreateTodoProps) {
             )}
           >
             <div>
-              <SelectDate
-                key={date.toString()}
-                currentDate={date}
-                setCurrentDate={setDate}
-              />
-
-              <div className="mt-6">
-                <SelectBowl
-                  currentBowl={bowl}
-                  setBowl={(nextBowl) => {
-                    setFlake(undefined)
-                    setBowl(nextBowl)
-                  }}
-                />
-              </div>
-              {bowl === undefined ? null : (
-                <div className="mt-6">
-                  <SelectFlake
-                    key={bowl.id}
-                    currentFlake={flake}
-                    setFlake={(nextFlake) => {
-                      setFlake(nextFlake)
-                    }}
-                    currentBowlId={bowl.id}
-                  />
-                </div>
-              )}
+              <p className="font-bold my-2 text-xl">할 일 선택하기</p>
+              <ul className="overflow-y-auto h-[200px] max-h-[200px]">
+                {dataList.map(({ bowl, flake }) => {
+                  return (
+                    <li key={flake.id}>
+                      <Button
+                        className={cn(
+                          "inline-flex w-full justify-start border-b border-b-red-300 rounded-none hover:bg-pink-300/30 transition-colors",
+                          {
+                            "bg-pink-500/30": targetFlake?.id === flake.id,
+                          }
+                        )}
+                        variant="ghost"
+                        onClick={() => {
+                          setTargetFlake(flake)
+                        }}
+                      >
+                        <span className="font-bold">{flake.name}</span>
+                        <span className="text-slate-600">{bowl.name} 에서 등록함</span>
+                      </Button>
+                    </li>
+                  )
+                })}
+              </ul>
             </div>
+            <div className="mt-6">
+              <Popover>
+                <p className="font-bold my-2 text-xl">날짜 정하기</p>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className="bg-neutral-100/10 justify-between border-none text-neutral-900 hover:bg-pink-400/30"
+                  >
+                    <CalendarIcon />
+                    {toDateKey(date)}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-o" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={date}
+                    onSelect={(_, selectedDate) => {
+                      setDate(selectedDate)
+                    }}
+                    required
+                  />
+                </PopoverContent>
+              </Popover>
+            </div>
+
             <div className="absolute bottom-6 right-6 flex gap-4">
               <Button
                 variant="ghost"
@@ -142,7 +179,7 @@ function CreateTodo({ onClose, initialDate }: CreateTodoProps) {
               <Button
                 variant="default"
                 className="bg-pink-700/90 transition-colors"
-                disabled={flake === undefined}
+                disabled={targetFlake === undefined}
                 onClick={createTodo}
               >
                 만들기
@@ -159,149 +196,6 @@ function CreateTodo({ onClose, initialDate }: CreateTodoProps) {
 function DialogRoot(props: React.PropsWithChildren<{ open: boolean }>) {
   useScrollLock({ open: props.open })
   return <div className="fixed inset-0 isolate w-full z-20">{props.children}</div>
-}
-
-function SelectBowl({
-  currentBowl,
-  setBowl,
-}: {
-  currentBowl?: Bowl
-  setBowl: (bowl: Bowl) => void
-}) {
-  const bowls = useBowlContext((state) => Array.from(state.map.values()))
-  const [open, setOpen] = React.useState(false)
-
-  return (
-    <Popover open={open} onOpenChange={setOpen}>
-      <p className="font-bold my-2 text-xl">주제 정하기</p>
-      <PopoverTrigger asChild>
-        <Button
-          variant="outline"
-          className="w-[200px] bg-neutral-100/10 justify-between border-none text-neutral-900 hover:bg-pink-400/30"
-        >
-          {currentBowl ? currentBowl.name : "주제를 정해주세요"}
-          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent className="w-full p-0" align="start">
-        <Command>
-          <CommandInput />
-          <CommandList>
-            {bowls.map((bowl) => {
-              return (
-                <CommandItem
-                  key={bowl.id}
-                  onSelect={() => {
-                    setBowl(bowl)
-                    setOpen(false)
-                  }}
-                >
-                  {bowl.name}
-                  <Check
-                    className={cn(
-                      "ml-auto",
-                      bowl.id === currentBowl?.id ? "opacity-100" : "opacity-0"
-                    )}
-                  />
-                </CommandItem>
-              )
-            })}
-          </CommandList>
-        </Command>
-      </PopoverContent>
-    </Popover>
-  )
-}
-
-function SelectFlake({
-  currentBowlId,
-  currentFlake,
-  setFlake,
-}: {
-  currentBowlId: number
-  currentFlake?: Flake
-  setFlake: (flake: Flake) => void
-}) {
-  const [open, setOpen] = React.useState(false)
-  const flakes = useFlakeContext((state) => {
-    return Array.from(state.map.values()).filter(
-      (flake) => flake.bowlId === currentBowlId
-    )
-  })
-
-  return (
-    <Popover open={open} onOpenChange={setOpen}>
-      <p className="font-bold my-2 text-xl">내용 정하기</p>
-      <PopoverTrigger asChild>
-        <Button
-          variant="outline"
-          className="w-[200px] bg-neutral-100/10 justify-between border-none text-neutral-900 hover:bg-pink-400/30"
-        >
-          {currentFlake ? currentFlake.name : "내용을 정해주세요"}
-          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent className="w-full p-0" align="start">
-        <Command>
-          <CommandInput />
-          <CommandList>
-            {flakes.map((flake) => {
-              return (
-                <CommandItem
-                  key={flake.id}
-                  onSelect={() => {
-                    setFlake(flake)
-                    setOpen(false)
-                  }}
-                >
-                  {flake.name}
-                  <Check
-                    className={cn(
-                      "ml-auto",
-                      flake.id === currentFlake?.id ? "opacity-100" : "opacity-0"
-                    )}
-                  />
-                </CommandItem>
-              )
-            })}
-          </CommandList>
-        </Command>
-      </PopoverContent>
-    </Popover>
-  )
-}
-
-function SelectDate({
-  currentDate,
-  setCurrentDate,
-}: {
-  currentDate: Date | undefined
-  setCurrentDate: (nextDate: Date) => void
-}) {
-  return (
-    <Popover>
-      <p className="font-bold my-2 text-xl">날짜 정하기</p>
-      <PopoverTrigger asChild>
-        <Button
-          variant="outline"
-          className="bg-neutral-100/10 justify-between border-none text-neutral-900 hover:bg-pink-400/30"
-        >
-          <CalendarIcon />
-          {currentDate === undefined ? "날짜를 정해주세요" : toDateKey(currentDate)}
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent className="w-auto p-o" align="start">
-        <Calendar
-          mode="single"
-          selected={currentDate}
-          onSelect={(_, selectedDate) => {
-            setCurrentDate(selectedDate)
-          }}
-          required
-        />
-      </PopoverContent>
-    </Popover>
-  )
 }
 
 const CREATE_TODO_ID = "create-todo"
