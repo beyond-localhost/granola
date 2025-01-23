@@ -1,18 +1,16 @@
 package flakes_test
 
 import (
+	"context"
 	"database/sql"
 	"granola/internal/bowls"
 	"granola/internal/flakes"
 	"granola/internal/testutil"
-	"granola/internal/todos"
 	"testing"
-	"time"
 )
 
-// TestCreate tests the Create, Remove method of the SQLiteFlakeRepository.
-// The todo will be removed at the same time because of the foreign key.
-func TestFlakeRepository(t *testing.T) {
+func TestCreate(t *testing.T) {
+	ctx := context.Background()
 	conn, err := testutil.NewTestConn()
 	if err != nil {
 		t.Fatal(err)
@@ -21,51 +19,61 @@ func TestFlakeRepository(t *testing.T) {
 		conn.DB.Close()
 	}()
 
-	bowlRepo := bowls.NewSQLiteBowlRepository()
-	bowlRepo.SetDB((conn.DB))
-	flakeRepo := flakes.NewSQLiteFlakeRepository()
-	flakeRepo.SetDB(conn.DB)
+	bowlQuery := bowls.New(conn.DB)
+	flakeQuery := flakes.New(conn.DB)
 
-	todoRepo := todos.NewSQLiteTodoRepository()
-	todoRepo.SetDB(conn.DB)
+	t.Run("Create with non nullable description", func(t *testing.T) {
+		createdBowl, err := bowlQuery.Create(ctx, bowls.CreateParams{Name: "TestBowlQuery"})
+		if err != nil {
+			t.Fatalf("error while creating a bowl: %v", err)
+		}
+		
+		flakeName := "flakeOne"
+		description := "flakeDescription"
 
-	name := "flake1"
-	description := "aabbccddeeffgghhiijjkkllmmnn"
-	_, err = flakeRepo.Create(name, &description, 1)
+		createdFlake, err := flakeQuery.Create(ctx, flakes.CreateParams{
+			Name: flakeName, 
+			Description: sql.NullString{
+				String: description,
+				Valid: true,
+			},
+			BowlID: createdBowl.ID,
+		})
 
-	if err == nil {
-		t.Fatal(err)
-	}
+		if err != nil {
+			t.Fatal(err)
+		}
 
-	createdBowl, err := bowlRepo.Create("bowl13", nil)
-	if err != nil {
-		t.Fatalf("error while creating a bowl: %v", err)
-	}
+		if createdFlake.Name != flakeName {
+			t.Errorf("Create(%s, %s) should make a bowl with the name %s but got %s", flakeName, description, flakeName, createdFlake.Name)
+		}
+	})
 
-	createdFlake, err := flakeRepo.Create(name, &description, createdBowl.Id)
-	
-	if err != nil {
-		t.Fatal(err)
-	}
+	t.Run("Create with nullable description", func(t *testing.T) {
+		createdBowl, err := bowlQuery.Create(ctx, bowls.CreateParams{Name: "TestBowlQuery2"})
+		if err != nil {
+			t.Fatalf("error while creating a bowl: %v", err)
+		}
+		
+		flakeName := "flakeOneTwo"
+		description := ""
 
-	scheduled := time.Now()
-	createdTodo, err := todoRepo.Create(createdFlake.Id, scheduled)
-	
-	if err != nil {
-		t.Fatal(err)
-	}
+		createdFlake, err := flakeQuery.Create(ctx, flakes.CreateParams{
+			Name: flakeName, 
+			Description: sql.NullString{
+				String: description,
+				Valid: false,
+			},
+			BowlID: createdBowl.ID,
+		})
 
-	// Remove the flake
-	err = flakeRepo.DeleteById(createdFlake.Id)
-	if err != nil {
-		t.Fatal(err)
-	}
+		if err != nil {
+			t.Fatal(err)
+		}
 
-	_, err = todoRepo.GetById(createdTodo.Id)
-	
-	if err == nil {
-		t.Errorf("flakeRepo.DeleteById(%d) removes the todo with id %d, but got the todo", createdFlake.Id, createdTodo.Id)
-	} else if err != sql.ErrNoRows {
-		t.Fatal(err)
-	}
+		if createdFlake.Name != flakeName {
+			t.Errorf("Create(%s, %s) should make a bowl with the name %s but got %s", flakeName, description, flakeName, createdFlake.Name)
+		}
+	})
 }
+

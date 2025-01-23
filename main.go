@@ -27,15 +27,13 @@ func main() {
 		}
 	}()
 
-	bowlsRepo := bowls.NewSQLiteBowlRepository()
-	bowlsService := bowls.NewBowlsService(bowlsRepo)
 	
-	flakesRepo := flakes.NewSQLiteFlakeRepository()
-	flakesService := flakes.NewFlakeService(flakesRepo)
-
-	todosRepo := todos.NewSQLiteTodoRepository()
-	todosService := todos.NewTodosService(todosRepo)
-
+	bowlsAdapter := bowls.Adapter{}
+	bowlsService := bowls.NewBowlsService(bowlsAdapter)
+	flakesAdapter := flakes.Adapter{}
+	flakesService := flakes.NewFlakesService(flakesAdapter)
+	todosAdapter := todos.Adapter{}
+	todosService := todos.NewTodosService(todosAdapter)
 
 	app := NewApp()
 
@@ -66,9 +64,18 @@ func main() {
 			if err = conn.Migrate(); err != nil {
 				log.Fatalf("error on migrating db: %v", err)
 			}
-			bowlsRepo.SetDB(conn.DB)
-			flakesRepo.SetDB(conn.DB)
-			todosRepo.SetDB(conn.DB)
+
+			bowlsAdapter.SetCtx(ctx)
+			bowlQuery := bowls.New(conn.DB)
+			bowlsAdapter.SetQueries(bowlQuery)
+			
+			flakesAdapter.SetCtx(ctx)
+			flakeQuery := flakes.New(conn.DB)
+			flakesAdapter.SetQueries(flakeQuery)
+
+			todosAdapter.SetCtx(ctx)
+			todoQuery := todos.New(conn.DB)
+			todosAdapter.SetQueries(todoQuery)
 		},
 		Bind: []interface{}{
 			app,
